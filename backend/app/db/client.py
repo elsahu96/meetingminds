@@ -3,12 +3,14 @@ SurrealDB async client wrapper.
 
 TODO: implement all methods using the surrealdb Python SDK.
 """
+
 from __future__ import annotations
 from app.core.config import get_settings
 from surrealdb import AsyncSurreal
 from datetime import datetime
 
 settings = get_settings()
+
 
 class SurrealDBClient:
     """Async wrapper around the SurrealDB Python SDK."""
@@ -19,7 +21,9 @@ class SurrealDBClient:
 
     async def connect(self) -> None:
         self.db = AsyncSurreal(settings.surrealdb_url)
-        await self.db.signin({"username": settings.surrealdb_user, "password": settings.surrealdb_pass})
+        await self.db.signin(
+            {"username": settings.surrealdb_user, "password": settings.surrealdb_pass}
+        )
         await self.db.use(settings.surrealdb_namespace, settings.surrealdb_database)
         await self.db.connect()
 
@@ -29,11 +33,11 @@ class SurrealDBClient:
     async def get_nodes(self, table: str, record_id: str | None = None) -> dict | list:
         """
         Get a node or all nodes from a table.
-        
+
         Args:
             table: The table name
             record_id: Optional record ID to get a specific node
-            
+
         Returns:
             dict if record_id is provided, list of dicts if not
         """
@@ -51,12 +55,12 @@ class SurrealDBClient:
     ) -> list:
         """
         Get edge or edges of a specific type, optionally filtered by from_id or to_id.
-        
+
         Args:
             rel_type: The relationship type (edge table name)
             from_id: Optional source node ID to filter by
             to_id: Optional target node ID to filter by
-            
+
         Returns:
             list of edge records
         """
@@ -77,31 +81,35 @@ class SurrealDBClient:
             {"to_id": to_id},
         )
 
-    async def create_node(self, table: str, data: dict, record_id: str | None = None) -> dict:
+    async def create_node(
+        self, table: str, data: dict, record_id: str | None = None
+    ) -> dict:
         """
         Create a node in a table.
-        
+
         Args:
             table: The table name
             data: The node data
             record_id: Optional record ID to use for the node
-            
+
         Returns:
             The created node record
         """
         node = f"{table}:{record_id}" if record_id else table
         return await self.db.create(node, data)
 
-    async def create_edge(self, from_id: str, rel_type: str, to_id: str, attrs: dict = None) -> list:
+    async def create_edge(
+        self, from_id: str, rel_type: str, to_id: str, attrs: dict = None
+    ) -> list:
         """
         Create an edge between two nodes.
-        
+
         Args:
             from_id: Source node ID (e.g., "person:alice")
             rel_type: Relationship type (edge table name)
             to_id: Target node ID (e.g., "action:1")
             attrs: Optional attributes to store on the edge
-            
+
         Returns:
             list of created edge records
         """
@@ -115,12 +123,12 @@ class SurrealDBClient:
     async def update_node(self, table: str, record_id: str, data: dict) -> list:
         """
         Update a node in a table.
-        
+
         Args:
             table: The table name
             record_id: The record ID of the node to update
             data: The data to update the node with
-            
+
         Returns:
             list of updated node records
         """
@@ -128,16 +136,18 @@ class SurrealDBClient:
         query = f"UPDATE {node} MERGE $data RETURN AFTER"
         return await self.db.query(query, {"data": data})
 
-    async def update_edge(self, from_id: str, rel_type: str, to_id: str, data: dict) -> list:
+    async def update_edge(
+        self, from_id: str, rel_type: str, to_id: str, data: dict
+    ) -> list:
         """
         Update an edge between two nodes.
-        
+
         Args:
             from_id: Source node ID (e.g., "person:alice")
             rel_type: Relationship type (edge table name)
             to_id: Target node ID (e.g., "action:1")
             data: The data to update the edge with
-            
+
         Returns:
             list of updated edge records
         """
@@ -154,11 +164,11 @@ class SurrealDBClient:
     async def delete_node(self, table: str, record_id: str) -> dict | None:
         """
         Delete a node from a table.
-        
+
         Args:
             table: The table name
             record_id: The record ID of the node to delete
-            
+
         Returns:
             The deleted node record
         """
@@ -168,11 +178,11 @@ class SurrealDBClient:
     async def delete_table(self, table: str, drop: bool = False) -> list:
         """
         Delete a table.
-        
+
         Args:
             table: The table name
             drop: Whether to drop the table (remove all data and structure)
-            
+
         Returns:
             list of deleted table records
         """
@@ -183,12 +193,12 @@ class SurrealDBClient:
     async def delete_edge(self, from_id: str, rel_type: str, to_id: str) -> list:
         """
         Delete an edge between two nodes.
-        
+
         Args:
             from_id: Source node ID (e.g., "person:alice")
             rel_type: Relationship type (edge table name)
             to_id: Target node ID (e.g., "action:1")
-            
+
         Returns:
             list of deleted edge records
         """

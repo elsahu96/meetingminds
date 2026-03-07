@@ -7,8 +7,7 @@ import logging
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -47,13 +46,19 @@ class NodeExtrator(BaseAgent):
     prompt_name = "prompt_01"
 
     async def __call__(self, state: NotesRequest):
+        logger.info("NodeExtrator started")
+        logger.info(f"State: {state}")
         prompt_vars = {"transcripts": state.notes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
         llm = self.model.with_structured_output(ExtractedEntities)
         result = await llm.ainvoke(prompt)
         entities = result.entities if hasattr(result, "entities") else []
-        return {"extracted_entities": [e.model_dump() if hasattr(e, "model_dump") else e for e in entities]}
+        return {
+            "nodes": [
+                e.model_dump() if hasattr(e, "model_dump") else e for e in entities
+            ]
+        }
 
 
 class EdgeExtractor(BaseAgent):
@@ -62,7 +67,8 @@ class EdgeExtractor(BaseAgent):
     prompt_name = "prompt_02"
 
     async def __call__(self, state: NotesRequest):
-
+        logger.info("EdgeExtractor started")
+        logger.info(f"State: {state}")
         prompt_vars = {"nodes": state.nodes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
@@ -77,7 +83,8 @@ class GraphWriter:
         self.db = SurrealDBClient()
 
     async def __call__(self, state: NotesRequest):
-
+        logger.info("GraphWriter started")
+        logger.info(f"State: {state}")
         if self.db.db is None:
             await self.db.connect()
 
@@ -91,17 +98,17 @@ class GraphWriter:
             raise TypeError(f"Unsupported node/edge type: {type(obj)!r}")
 
         logger.info("Creating nodes")
-        for node in (state.nodes or []):
+        for node in state.nodes or []:
             node_data = _as_dict(node)
             logger.info(f"Processing node: {node_data}")
             record = await self.db.create_node(
                 table=node_data["type"].lower(),
                 record_id=node_data["name"].lower().replace(" ", "_").replace("-", ""),
-                data=node_data
+                data=node_data,
             )
             logger.info(f"Recorded node: {record}")
 
-        for edge in (state.edges or []):
+        for edge in state.edges or []:
             edge_data = _as_dict(edge)
             logger.info(f"Processing edge: {edge_data}")
             record = await self.db.create_edge(
@@ -112,5 +119,3 @@ class GraphWriter:
             logger.info(f"Recorded edge: {record}")
 
         return {"status": "Nodes and edges recorded successfully"}
-
-

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import type { Transcript, ExtractStep, GraphNode, GraphEdge } from '@/types'
 import { PROCESS_STEPS } from '@/lib/seedData'
+import { apiClient } from '@/lib/api'
 
 let stepIdCounter = 0
 const nextId = () => `step-${stepIdCounter++}`
@@ -48,42 +49,59 @@ export function useProcessing(): UseProcessingReturn {
       )
     }, 280)
 
-    // Stream extraction steps
+    // Stream extraction steps (UI feedback while request is in flight)
     PROCESS_STEPS.forEach((s, i) => {
       setTimeout(() => {
         setSteps(prev => [...prev, { ...s, id: nextId() }])
       }, 200 + i * 420)
     })
 
-    const totalMs = 200 + PROCESS_STEPS.length * 420 + 300
-    setTimeout(() => {
-      if (tickerRef.current) clearInterval(tickerRef.current)
+    const notes = transcripts.map(t => t.text).join('\n\n---\n\n')
 
-      setTranscripts(prev =>
-        prev.map(t => ({ ...t, status: 'done' as const, progress: 100 }))
-      )
-      setProcessing(false)
-      setAllDone(true)
-      setShowDelta(true)
-
-      // Add a new node to the graph to demonstrate live update
-      onNewNodes(
-        [{
-          id: 'a21',
-          type: 'action',
-          label: 'payments+1day',
-          overdue: true,
-          tooltip: {
-            type: 'ACTION',
-            name: 'Payments (+1 day)',
-            role: 'Alice · Mar 13',
-            commits: 'pending',
-            risk: 'medium',
-          },
-        }],
-        [{ source: 'alice', target: 'a21', type: 'committed' }],
-      )
-    }, totalMs)
+    apiClient
+      .processNotes({ notes, nodes: [], edges: [], status: '' })
+      .then((res) => {
+        if (tickerRef.current) clearInterval(tickerRef.current)
+        setTranscripts(prev =>
+          prev.map(t => ({ ...t, status: 'done' as const, progress: 100 }))
+        )
+        setProcessing(false)
+        setAllDone(true)
+        setShowDelta(true)
+        // Use returned nodes/edges if present and in expected shape, else demo data
+        const nodes = Array.isArray(res?.nodes) && res.nodes.length > 0
+          ? (res.nodes as GraphNode[])
+          : [{
+              id: 'a21',
+              type: 'action' as const,
+              label: 'payments+1day',
+              overdue: true,
+              tooltip: {
+                type: 'ACTION',
+                name: 'Payments (+1 day)',
+                role: 'Alice · Mar 13',
+                commits: 'pending',
+                risk: 'medium',
+              },
+            }]
+        const edges = Array.isArray(res?.edges) && res.edges.length > 0
+          ? (res.edges as GraphEdge[])
+          : [{ source: 'alice', target: 'a21', type: 'committed' as const }]
+        onNewNodes(nodes, edges)
+      })
+      .catch((err) => {
+        if (tickerRef.current) clearInterval(tickerRef.current)
+        setTranscripts(prev =>
+          prev.map(t => t.status === 'processing' ? { ...t, status: 'ready' as const, progress: 0 } : t)
+        )
+        setProcessing(false)
+        setSteps(prev => [...prev, {
+          id: nextId(),
+          cls: 'warn',
+          icon: '⚠',
+          text: `Process failed · ${err?.response?.data?.detail ?? err?.message ?? 'Unknown error'}`,
+        }])
+      })
   }, [processing])
 
   return { processing, allDone, steps, showDelta, runProcessing }

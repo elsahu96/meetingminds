@@ -30,6 +30,12 @@ export const apiClient = {
   /** Get single-point-of-failure analysis */
   getRisk: () =>
     api.get('/risk/single-point-of-failure').then(r => r.data),
+
+  /** Process notes through the LangGraph pipeline */
+  processNotes: (req: { notes: string; nodes?: unknown[]; edges?: unknown[]; status?: string }) => {
+    console.log('[processNotes] req:', req)
+    return api.post<{ notes?: string; nodes?: unknown[]; edges?: unknown[]; status?: string }>('/process-notes', req).then(r => r.data)
+  },
 }
 
 /** WebSocket connection for live graph updates */
