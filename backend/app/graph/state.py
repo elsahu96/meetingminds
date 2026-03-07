@@ -6,17 +6,16 @@ TODO: wire up nodes in flow.py
 
 from __future__ import annotations
 from pydantic import BaseModel
-from typing import Optional
 
 
 class NotesRequest(BaseModel):
     notes: str
-    nodes: list = []
-    edges: list = []
-    status: str = ""
+    nodes: list = None
+    edges: list = None
+    status: str = None
 
 class QueryRequest(BaseModel):
-    question: str
-    graph_information: list = None
+    question: str | None = None
+    surreal_query: str | None = None
+    sub_graph: list | dict = None
     response: str = None
-
