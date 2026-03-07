@@ -1,0 +1,36 @@
+Meeting 1 — Engineering Sprint Planning
+Date & Time: Monday, February 3, 2026 | 10:00 AM
+Attendees: Jordan Lee (Engineering Lead), Priya Nair (Backend Dev), Sam Torres (Frontend Dev), Mei Chen (QA Engineer)
+Transcript
+
+
+Jordan Lee: Alright everyone, let's kick off sprint planning. Before we get into the backlog, I want to do a proper status pass. We had a rough end to last sprint — two tickets rolled over and I don't want to repeat that. Let's be honest about blockers early. Priya, how's the user authentication refactor coming along?
+Priya Nair: Honestly, better than I expected. I've completely rewritten the token refresh logic — it was a mess of nested callbacks and I've converted it to async/await with proper error propagation. The PR is in draft. I'm now focused on integrating the new auth layer with the customer data pipeline, which is the trickier part. I should have something reviewable by Wednesday, maybe Thursday at the latest.
+Jordan Lee: Good. What's the risk on the pipeline integration? That's new territory.
+Priya Nair: The main risk is schema compatibility. The pipeline was written assuming the old session token structure. If I change that, downstream consumers break. I need to do an audit of everything that reads from the session store before I commit to the new contract.
+Sam Torres: That's relevant to me, actually. The onboarding wizard reads session state to pre-populate user fields in steps two and three. If the schema changes, I'll need to update the frontend code.
+Priya Nair: Good to know. I'll include you in the RFC document I'm drafting. It'll outline the proposed schema changes so you can flag anything that breaks your assumptions.
+Jordan Lee: Great, let's make that RFC a required review before the PR goes to main. Sam, catch us up on the onboarding UI.
+Sam Torres: I'm building the wizard flow and the progress tracker component. Steps one and two are done and passing unit tests. Steps three and four are where I'm stuck — I'm blocked on the design handoff. The Figma files haven't been updated and the designs I have are from the December draft, which apparently changed significantly in January. I can't build to a spec that might be wrong.
+Jordan Lee: Who owns those Figma files on the design side?
+Sam Torres: Daniel Osei. I pinged him on Slack last Thursday and again on Friday. No response. I'm assuming he's heads-down but I'm losing time.
+Jordan Lee: I'll reach out to him directly today. That's a blocker I need to escalate. Can you do anything else on the UI while you wait, or are steps three and four the critical path?
+Sam Torres: I can work on the analytics events — tracking what gets fired at each wizard step. And I can set up the skeleton state components. But I can't finalise the user-facing logic without the spec. So realistically, I'm at maybe forty percent capacity on this ticket until it's unblocked.
+Jordan Lee: Understood. I'll flag it as a sprint risk. Mei, what's the QA picture?
+Mei Chen: I've been productive on two fronts. The regression suite for the payment module is fully written — two hundred and fourteen test cases covering the happy path, edge cases, and all the known failure modes from last quarter's incidents. It's ready to run. But I'm blocked from actually running it because I still don't have access to the staging environment.
+Jordan Lee: How long has that been pending?
+Mei Chen: Five days since IT submitted the ticket. I followed up myself on Thursday and got an auto-response saying the queue was backed up. It's genuinely blocking me from validating Priya's last three PRs, which means we can't sign off on the payment module going to production.
+Jordan Lee: Five days is unacceptable for a staging access request. I'll escalate that today — I'll go directly to the IT manager rather than waiting in the queue. Mei, what else can you be doing in the meantime?
+Mei Chen: I've started writing test cases for the authentication refactor in parallel, which is useful regardless. I can also do some manual smoke testing in the dev environment, but it's not equivalent — dev data is synthetic and doesn't reproduce the issues we saw in production last cycle.
+Priya Nair: For what it's worth, I can give Mei access to my local environment with a production data snapshot if that helps bridge the gap temporarily. It's not perfect but it's real data.
+Mei Chen: That would actually be really useful. Let's set that up after this call.
+Jordan Lee: Good problem-solving. Let's formalise that as a temporary workaround while IT sorts out staging. Now — before we get into the backlog — Priya, you mentioned something last week about the notification service. Where does that stand?
+Priya Nair: Right, yes. I want to be transparent about this. I've started scoping out a notification service integration as a side workstream. It's not officially on the sprint, it's not in Jira yet, and I haven't asked for approval — I just started looking at it because it came up in a customer escalation last month and I thought it was simpler than it turned out to be.
+Jordan Lee: How much time have you spent on it?
+Priya Nair: Probably six to eight hours across last week. Mostly reading the third-party provider docs and sketching an architecture. Nothing coded yet.
+Sam Torres: I actually saw a Slack message from Tom Baxter's team mentioning something about a notification service too. Are you coordinating with them?
+Priya Nair: No. I wasn't aware they were looking at it. That might be a problem.
+Jordan Lee: Let's put a pin in it — I'll check with Tom. For now, Priya, I'd like you to focus on the auth refactor and hold off on the notification work until we know whether there's a coordinated effort happening. If there's already a team on it, your time is better spent on the sprint tickets.
+Priya Nair: Understood. I'll document what I've scoped so it's not lost, and I'll stop actively working it.
+Mei Chen: I'll need to write test cases for the notification service at some point regardless of who builds it. Let me know when there's a spec, whoever owns it.
+Jordan Lee: Agreed. Okay, let's pull up the backlog and go through prioritisation. We've got eleven tickets in the ready column...

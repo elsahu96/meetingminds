@@ -1,0 +1,27 @@
+Meeting 5 — Customer Success Sync
+Date & Time: Thursday, February 6, 2026 | 11:00 AM
+Attendees: Rachel Holm (CS Manager), Jake Novak (Account Executive), Ines Carvalho (Customer Onboarding), Derek Yuen (Support Lead)
+Transcript
+
+
+Rachel Holm: Let's get into it. I pulled the escalation data before this meeting and we're up twenty-two percent in ticket volume week-over-week. That's not a blip — that's a trend. I want to understand the root causes and make sure we're routing them to the right internal teams. Derek, give us the breakdown.
+Derek Yuen: Ticket volume is up across three categories. The biggest driver — about forty percent of the new volume — is confusion around notification settings. Customers are reporting two distinct problems. First, they can't locate the notification preferences in the portal at all — the navigation is non-obvious. Second, those who do find it say the settings don't stick — they update their preferences and then notifications continue to behave as before. It looks like the preferences UI and the backend are out of sync.
+Rachel Holm: That's a product defect, not a user error. Have we filed a bug?
+Derek Yuen: I filed a formal bug report last Tuesday with a full reproduction script. As of this morning, no response and no status update. I'm not even sure which team owns notifications on the product side.
+Jake Novak: I can tell you it's a serious commercial issue. I had QBRs with three enterprise accounts this week — Meridian, Axon Group, and Clearfield — and all three raised the notification problem unprompted. Meridian specifically said their team had 'given up' trying to configure it and was considering reverting to email-only communication with customers. That is a very bad signal for a product that's supposed to drive engagement.
+Rachel Holm: Jake, what did you tell them?
+Jake Novak: I told them it was known and being addressed. Which felt dishonest because as far as I know, it isn't being addressed — at least not by anyone who's told us about it.
+Ines Carvalho: From onboarding, I'm seeing the same issue but at the very beginning of the customer journey. I have a standard onboarding flow — twelve touch points over thirty days — and the notification configuration step is now consistently the one where new customers drop off or get stuck. I've started manually walking them through it on screen share calls, which is not scalable and shouldn't be necessary.
+Rachel Holm: How many new customers hit that step per week?
+Ines Carvalho: About forty. So on a bad week, I'm spending two to three hours on manual workarounds for a product problem. That's time I should be spending on proactive onboarding.
+Derek Yuen: I've heard through the grapevine — genuinely not confirmed — that the Engineering team has a workstream underway on the notification service. But I don't know if that's a new build, a fix, or just scoping. And nobody's been in touch with Support to tell us what to communicate to customers in the meantime.
+Jake Novak: That's the core of the problem. We're customer-facing every day, fielding the complaints, but we have no line of sight into what's being done about it or when. It makes us look unreliable to our customers and uninformed to each other.
+Ines Carvalho: I've been documenting all the onboarding failure points in a log. I have thirty-eight specific examples with timestamps, user IDs, and what went wrong. I intended to send it to whoever owns notifications in Product but I didn't know who that was.
+Rachel Holm: Don't let that sit. Send that log to me today and I'll find the right owner in Product and Engineering. Data like that is exactly what they need to prioritise a fix.
+Derek Yuen: I have a similar compiled list on the support side — the top five recurring notification complaints with ticket counts, severity, and customer segments affected. I can have that to you by end of day tomorrow.
+Rachel Holm: Perfect. I'm going to request a direct cross-functional meeting with Tom Baxter from Engineering and Clara Whitfield from Product. I'll bring both your documents as evidence. Jake, I may ask you to join that call to give the commercial dimension.
+Jake Novak: I'm available and willing. What I'd also like from that conversation is a set of talking points I can take back to Meridian and the others. Even a rough timeline would help.
+Rachel Holm: Agreed. We need to give customers something concrete. If Engineering is working on this, they owe us a communication line into CS so we're not operating in the dark.
+Ines Carvalho: Could we also ask for a temporary workaround we can document in the help centre? Even a 'known issue, here's how to manually reset your preferences' article would reduce inbound volume.
+Derek Yuen: I could write that article in an hour if someone gives me the technical details on how to do the reset. I've been figuring it out through trial and error with customers, but I'd rather have the authoritative method.
+Rachel Holm: I'll add that to my list for the Engineering conversation. Alright — let's also talk about the other two escalation drivers before we wrap up. Derek, what are the other twenty percent each?

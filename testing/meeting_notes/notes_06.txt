@@ -1,0 +1,32 @@
+Meeting 6 — Platform Operations Standup
+Date & Time: Thursday, February 6, 2026 | 3:00 PM
+Attendees: Greg Thorn (Platform Ops Lead), Yuki Tanaka (DevOps Engineer), Bella Owusu (Site Reliability), Rami Haddad (Security Engineer)
+Transcript
+
+
+Greg Thorn: Alright, weekly standup. I know everyone is busy so let's be structured. Each person: what you're working on, any blockers, anything that needs the group's attention. Yuki, start us off.
+Yuki Tanaka: Good week overall. Deployments have been clean — no rollbacks, no failed pipelines. On a proactive note, I've been building out automated environment provisioning. Right now, standing up a new dev or staging environment is a manual process that takes about half a day and requires me personally. I'm replacing that with a Terraform workflow that lets engineers self-serve. First version should reduce setup time by about seventy percent, and it removes the bottleneck of me being the only person who knows the process.
+Greg Thorn: That's a high-value piece of infrastructure. Any risks I should know about?
+Yuki Tanaka: One. The automation will give engineers direct access to provision environments, which is great for speed but introduces some risk if they misconfigure something. I'm building in guardrails — cost caps, naming conventions, auto-expiry for unused environments — but it's worth a security review before we roll it out to the full team.
+Rami Haddad: Happy to review it. Send me the Terraform configs when you're ready.
+Yuki Tanaka: Will do. I'll have a draft by next Tuesday.
+Bella Owusu: My focus this week has been on the alerting improvements following the API tier memory leak incident two weeks ago. That incident caught us off guard — we had no signal before the service degraded. I've been working on a more sophisticated alerting model that uses memory growth rate, not just absolute memory usage, which should give us a fifteen-to-twenty minute warning window before a problem becomes an outage.
+Greg Thorn: That's exactly the kind of proactive work we need more of. What's the status?
+Bella Owusu: The alerting logic is written but I need read access to the new observability stack to configure the alert rules and test them against historical data. I put in the access request on Monday and still haven't had a response.
+Greg Thorn: That's sitting in my queue — I missed it. I'll approve it right after this call. Today.
+Bella Owusu: Thank you. Once I have access, I estimate two days to finish configuration and run validation tests. I'd like to have it live by Tuesday of next week.
+Greg Thorn: Good timeline. Rami, what are you working on?
+Rami Haddad: I've been doing a security review of the customer data pipeline — specifically looking at how authentication tokens are being validated at the pipeline ingestion layer. I found a couple of issues. First, token expiry isn't being checked consistently — some pipeline jobs are accepting tokens past their expiry window. Second, there's no rate limiting on the pipeline API endpoint, so a malicious or malfunctioning client could flood it. Neither issue is critical today, but both are exploitable in the wrong circumstances.
+Greg Thorn: Is that the pipeline Marcus Flynn is in the middle of migrating?
+Rami Haddad: I believe so. I've been reviewing the code in the repository but I haven't spoken to Marcus directly. I was planning to write up the findings and submit them through the standard vulnerability disclosure process.
+Greg Thorn: Don't wait for the formal process in this case. Reach out to Marcus directly today. If he's migrating the pipeline and he doesn't know about these issues, there's a risk he migrates the vulnerabilities into the new architecture. Better to catch it before the migration than after.
+Rami Haddad: Understood. I'll send him a direct message after this.
+Yuki Tanaka: There's also a second pipeline that's relevant. From the data team sync this morning, I know Nina Johansson is building a feature store that will have its own data pipeline. If the authentication issues exist in the current pipeline code as a pattern, they might be copied into whatever Nina builds.
+Rami Haddad: I wasn't aware of the feature store work. How far along is it?
+Yuki Tanaka: Early stages from what I understand — she's been working on it for about three weeks but the compute layer isn't built yet.
+Rami Haddad: That's actually a good time to get the security patterns right. Before the serving layer is built rather than after. I'll reach out to Nina as well.
+Bella Owusu: Yuki, do you know if the feature store will have its own deployment pipeline or if it's going through our standard CI/CD?
+Yuki Tanaka: Unknown. That's probably a question for Nina and Aisha. If it's a new infrastructure component, we should be involved early to make sure it fits the standard patterns.
+Greg Thorn: I'll raise it with Aisha. We don't want teams building their own deployment pipelines in isolation — that creates maintenance overhead for us later. One more thing before we wrap up: I've had two separate access requests this week for the legacy CRM replica I maintain. Marcus Flynn and Nina Johansson both need it for different workstreams. I'm sharing it with both of them. Just flagging it for visibility so you all know traffic to that system will increase.
+Bella Owusu: Should we think about monitoring that system more carefully if usage is going up? It wasn't designed as a production dependency.
+Greg Thorn: Good instinct. I'll add some basic monitoring to it — query count, latency, disk usage. If it becomes critical path for two separate workstreams, I want to know before it falls over.

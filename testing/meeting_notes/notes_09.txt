@@ -1,0 +1,31 @@
+Meeting 9 — Finance & Legal Cross-Functional Sync
+Date & Time: Tuesday, February 11, 2026 | 2:30 PM
+Attendees: Helen Carter (CFO), Nadia Obi (Legal Counsel), Brett Simmons (FP&A Lead), Alicia Torres (Contracts Manager)
+Transcript
+
+
+Helen Carter: I called this meeting because several things surfaced in the last week that I want to understand and address together — vendor spend, Legal review backlogs, and some financial modelling gaps in Q2. Let's go one by one. Brett, start with the Q2 model.
+Brett Simmons: The Q2 model is substantively built but there are two notable unknowns that are creating a fifteen percent variance band in our revenue projection. The first is the referral programme. Victor from Revenue Ops told me it's blocked on a data infrastructure issue — a field that's not exposed in the current data model. Until that field is available, the programme can't launch and I can't include its contribution in the forecast. The second is the recommendation engine. I know Growth is building it, but I haven't been able to get a confirmed product scope or a launch date, which means I can't model the revenue uplift.
+Helen Carter: A fifteen percent variance is too wide for a public company. What do you need to close it?
+Brett Simmons: For the referral programme, I need a launch date from Data Engineering. For the recommendation engine, I need a product scope and a go-live date from Growth or Product. Both are things I've asked for and haven't received.
+Helen Carter: Nadia, I want to talk about the Legal review backlog. How bad is it and why?
+Nadia Obi: It's significant. We currently have twenty-three submissions in queue — a mix of job descriptions from Talent, ad copy from Marketing, vendor contracts from multiple teams, and a few employment agreements. Our review capacity is myself and one associate. In a normal week, we can process twelve to fifteen reviews. The last three weeks have been abnormal — we had a compliance audit running in parallel which absorbed most of my associate's time.
+Helen Carter: So it's a resource constraint, not a process failure.
+Nadia Obi: Mostly. There's also a process issue — some submissions are coming in incomplete, which means I have to go back to the requestor for information and that doubles the turnaround time. A proper submission checklist would help.
+Alicia Torres: I could build that checklist for the procurement submissions I handle. If requestors know exactly what's needed upfront, we'd eliminate most of the back-and-forth.
+Nadia Obi: That would help meaningfully on the vendor contract side. Alicia, can we work on that together this week?
+Alicia Torres: Yes, I'll draft something by Thursday.
+Helen Carter: Good. Nadia, this morning Alicia flagged something in procurement that I want to discuss now. Alicia, walk us through it.
+Alicia Torres: Two separate vendor requests came through this week for third-party push notification providers. The first came from Priya Nair in Engineering — she submitted it as urgent, flagging a customer escalation as the business justification. The second came through a less formal channel — Tom Baxter from Product emailed me directly asking about the evaluation process for notification infrastructure vendors. They're describing different scopes but they're clearly looking at the same vendor category.
+Brett Simmons: Neither of those went through FP&A. There's no budget allocated for notification vendor spend in Q2. If either of those goes to contract, it would come out of contingency — which I'd prefer to preserve.
+Helen Carter: How much are we talking?
+Alicia Torres: Priya's submission referenced a vendor with a monthly cost of around twelve thousand pounds. Tom's inquiry was for a different vendor but similar category — I'd estimate comparable pricing. If both proceed, we're looking at potentially twenty-five thousand pounds a month in unbudgeted vendor spend.
+Helen Carter: That's not a rounding error. Nadia, hold both Legal reviews on those vendor contracts.
+Nadia Obi: Already done. I put a hold on Priya's submission when Alicia flagged the duplicate. I'll send both requestors a formal hold notice today with an explanation that the request needs Finance clearance.
+Brett Simmons: This speaks to a broader issue. I see this pattern quarterly — teams make vendor commitments that weren't in the plan and Finance finds out when the invoice arrives. I'd like to propose a standing requirement: any new vendor category above five thousand pounds a month requires FP&A sign-off before procurement can proceed. Not just notify, but actively approve.
+Helen Carter: I agree. Alicia, let's codify that in the procurement policy. Draft an updated policy document with that threshold and route it through me for approval.
+Alicia Torres: I can have a draft by end of the week.
+Helen Carter: Good. Nadia, separately — I understand Marketing has two submissions sitting in your queue that are time-sensitive. Sophia Grant contacted me this morning about it. How do you want to handle priority?
+Nadia Obi: I've looked at both. The ad copy variants are straightforward — no red flags, I can turn those around in a day. The content piece with the competitive comparison language is more complex. Some of the claims need to be softened to reduce liability exposure. I'll draft suggested edits and send them to Leo Marsh. Realistically I can close both by Thursday.
+Helen Carter: Good. Let Sophia know directly. And let's agree on a standing principle: customer-facing content on a confirmed timeline gets prioritised over internal JDs or vendor agreements. Not that the others don't matter, but timeline sensitivity has to be a factor in how you sequence the queue.
+Nadia Obi: That's a reasonable framework. I'll apply it going forward and communicate it to requestors when they submit.
