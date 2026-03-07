@@ -10,13 +10,18 @@ messages:
       - **Action** - any concrete task, commitment, or next step assigned to someone
 
       For each entity, return a JSON array where every element follows this exact structure:
-      
+
         "type": "<Person | Team | Topic | Action>",
         "name": "<concise canonical name for the entity>",
-        "description": "<a 1-3 sentence summary: for Person include their role, which meetings they appeared in, any blockers they raised, and any work they are doing; for Team include what they are responsible for and any cross-team dependencies; for Topic include what it is, which teams are working on it, and any blockers or risks; for Action include who owns it, what they must do, and any stated deadline>"
-      
+        "description": "<a 5-7 sentence summary: 
+        for Person include their role, what actions they are taking, who are they reporting to or being reported to, which teams they are part of, which meetings they appeared in, any blockers they raised, and any work they are doing; 
+        for Team include what they are responsible for and any cross-team dependencies, what other teams they depend on or are depended on by; 
+        for Topic include what it is, which teams are working on it, and any blockers or risks; 
+        for Action include who owns it, what other actions they are related to, what they must do, and any stated deadline>"
+
 
       Rules:
+      - Use people or team's name in description, not just "some people" or "the team".
       - Deduplicate: if the same entity appears across multiple meetings, produce ONE entry that synthesises all mentions
       - Canonical names: use the most complete form of a name (e.g. "Priya Nair" not "Priya")
       - Do not invent information not present in the transcripts
