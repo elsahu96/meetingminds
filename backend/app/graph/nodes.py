@@ -15,6 +15,7 @@ class ExtractedEntities(BaseModel):
         default_factory=list, description="List of extracted entities"
     )
 
+
 class ExtractedEdge(BaseModel):
     from_id: str = Field(description="Source node ID in format 'Type:Name'")
     rel_type: str = Field(description="Relationship type")
@@ -41,11 +42,7 @@ class NodeExtrator(BaseAgent):
 
         llm = self.model.with_structured_output(ExtractedEntities)
         result = await llm.ainvoke(prompt)
-        return {
-            "nodes": (
-                result.entities if hasattr(result, "entities") else []
-            )
-        }
+        return {"nodes": (result.entities if hasattr(result, "entities") else [])}
 
 
 class EdgeExtractor(BaseAgent):
@@ -60,11 +57,7 @@ class EdgeExtractor(BaseAgent):
 
         llm = self.model.with_structured_output(ExtractedEdges)
         result = await llm.ainvoke(prompt)
-        return {
-            "edges": (
-                result.edges if hasattr(result, "edges") else []
-            )
-        }
+        return {"edges": (result.edges if hasattr(result, "edges") else [])}
 
 
 class GraphWriter(BaseAgent):

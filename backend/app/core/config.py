@@ -16,10 +16,12 @@ class Settings(BaseSettings):
     surrealdb_pass: str = "root"
 
     # LangSmith
-    langchain_tracing_v2: bool = False
-    langchain_api_key: str = ""
-    langchain_project: str = "meetingmind"
-
+    langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
+    langsmith_api_key: str = os.getenv("LANGSMITH_API_KEY")
+    langsmith_project: str = os.getenv("LANGSMITH_PROJECT", "MeetingMinds")
+    langsmith_endpoint: str = os.getenv(
+        "LANGSMITH_ENDPOINT", "https://api.smith.langchain.com"
+    )
     # App
     env: str = "development"
     cors_origins: list[str] = ["http://localhost:5173"]

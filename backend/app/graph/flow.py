@@ -11,6 +11,7 @@ Nodes:
 TODO: implement each node function and wire into StateGraph.
 """
 
+from langsmith import traceable
 from app.graph.state import MeetingMindState
 from langgraph.graph import END, StateGraph, START
 from app.graph.nodes import EdgeExtractor, GraphWriter, NodeExtrator
@@ -19,7 +20,9 @@ from app.graph.nodes import EdgeExtractor, GraphWriter, NodeExtrator
 # ─── Graph assembly ───────────────────────────────────────────────────────────
 
 
+@traceable
 class ProcessNotes:
+    @traceable
     def __init__(self):
         builder = StateGraph(MeetingMindState)
         builder.add_node("node_extractor", NodeExtrator())
@@ -33,6 +36,7 @@ class ProcessNotes:
         # builder.add_edge("graph_writer", END)
         self.graph = builder.compile()
 
+    @traceable
     async def __call__(self, request):
         # LangGraph expects a state dict, not a Pydantic model
         initial_state = {"transcript": request.notes}
