@@ -6,21 +6,22 @@ TODO: implement all methods using the surrealdb Python SDK.
 from __future__ import annotations
 from app.core.config import get_settings
 from surrealdb import AsyncSurreal
+from datetime import datetime
 
 settings = get_settings()
-
 
 class SurrealDBClient:
     """Async wrapper around the SurrealDB Python SDK."""
 
     def __init__(self):
-        self.db: AsyncSurreal | None = None
+        # Don't connect here - connection is async
+        self.db = None
 
     async def connect(self) -> None:
         self.db = AsyncSurreal(settings.surrealdb_url)
-        await self.db.connect()
         await self.db.signin({"username": settings.surrealdb_user, "password": settings.surrealdb_pass})
         await self.db.use(settings.surrealdb_namespace, settings.surrealdb_database)
+        await self.db.connect()
 
     async def query(self, surql: str, vars: dict | None = None) -> list:
         return await self.db.query(surql, vars or {})

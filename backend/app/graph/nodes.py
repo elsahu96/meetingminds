@@ -1,5 +1,16 @@
 from app.graph.base import BaseAgent
 from pydantic import BaseModel, Field
+from app.graph.state import NotesRequest
+from app.db.client import SurrealDBClient
+
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 class ExtractedEntity(BaseModel):
@@ -35,9 +46,8 @@ class NodeExtrator(BaseAgent):
     model_name = "gpt-4o-mini"
     prompt_name = "prompt_01"
 
-    async def __call__(self, state: dict):
-        transcript = state.get("transcript", "")
-        prompt_vars = {"transcripts": transcript}
+    async def __call__(self, state: NotesRequest):
+        prompt_vars = {"transcripts": state.notes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
         llm = self.model.with_structured_output(ExtractedEntities)
@@ -51,9 +61,9 @@ class EdgeExtractor(BaseAgent):
     model_name = "gpt-4o-mini"
     prompt_name = "prompt_02"
 
-    async def __call__(self, state):
+    async def __call__(self, state: NotesRequest):
 
-        prompt_vars = {"nodes": state["nodes"]}
+        prompt_vars = {"nodes": state.nodes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
         llm = self.model.with_structured_output(ExtractedEdges)
@@ -61,21 +71,46 @@ class EdgeExtractor(BaseAgent):
         return {"edges": (result.edges if hasattr(result, "edges") else [])}
 
 
-class GraphWriter(BaseAgent):
+class GraphWriter:
 
-    model_name = "gpt-4o-mini"
-    prompt_name = "prompt_01"
+    def __init__(self):
+        self.db = SurrealDBClient()
 
-    async def __call__(self, state):
+    async def __call__(self, state: NotesRequest):
 
-        prompt_vars = {"transcripts": state.get("transcript", "")}
-        prompt = self.prompt_template.format_messages(**prompt_vars)
+        if self.db.db is None:
+            await self.db.connect()
 
-        llm = self.model.with_structured_output(ExtractedEdge)
-        result = await llm.ainvoke(prompt)
-        return {
-            "extracted_entities": (
-                result.entities if hasattr(result, "entities") else []
-            ),
-            "attribute": result,
-        }
+        def _as_dict(obj):
+            if isinstance(obj, dict):
+                return obj
+            if hasattr(obj, "model_dump"):
+                return obj.model_dump()
+            if hasattr(obj, "dict"):
+                return obj.dict()
+            raise TypeError(f"Unsupported node/edge type: {type(obj)!r}")
+
+        logger.info("Creating nodes")
+        for node in (state.nodes or []):
+            node_data = _as_dict(node)
+            logger.info(f"Processing node: {node_data}")
+            record = await self.db.create_node(
+                table=node_data["type"].lower(),
+                record_id=node_data["name"].lower().replace(" ", "_").replace("-", ""),
+                data=node_data
+            )
+            logger.info(f"Recorded node: {record}")
+
+        for edge in (state.edges or []):
+            edge_data = _as_dict(edge)
+            logger.info(f"Processing edge: {edge_data}")
+            record = await self.db.create_edge(
+                from_id=edge_data["from_id"].lower().replace(" ", "_").replace("-", ""),
+                rel_type=edge_data["rel_type"],
+                to_id=edge_data["to_id"].lower().replace(" ", "_").replace("-", ""),
+            )
+            logger.info(f"Recorded edge: {record}")
+
+        return {"status": "Nodes and edges recorded successfully"}
+
+

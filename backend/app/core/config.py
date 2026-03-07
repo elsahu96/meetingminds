@@ -9,11 +9,11 @@ class Settings(BaseSettings):
     openai_api_key: str = os.getenv("OPENAI_API_KEY")
 
     # SurrealDB
-    surrealdb_url: str = "ws://localhost:8000/rpc"
-    surrealdb_namespace: str = "meetingmind"
+    surrealdb_url: str = os.getenv("SURREALDB_URL")
+    surrealdb_namespace: str = "main"
     surrealdb_database: str = "main"
-    surrealdb_user: str = "root"
-    surrealdb_pass: str = "root"
+    surrealdb_user: str = os.getenv("SURREALDB_USER")
+    surrealdb_pass: str = os.getenv("SURREALDB_PASS")
 
     # LangSmith
     langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "true")
