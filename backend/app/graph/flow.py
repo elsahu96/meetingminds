@@ -11,7 +11,7 @@ Nodes:
 TODO: implement each node function and wire into StateGraph.
 """
 
-from app.graph.state import MeetingMindState
+from app.graph.state import NotesRequest
 from langgraph.graph import END, StateGraph, START
 from app.graph.nodes import EdgeExtractor, GraphWriter, NodeExtrator
 
@@ -21,7 +21,7 @@ from app.graph.nodes import EdgeExtractor, GraphWriter, NodeExtrator
 
 class ProcessNotes:
     def __init__(self):
-        builder = StateGraph(MeetingMindState)
+        builder = StateGraph(NotesRequest)
         builder.add_node("node_extractor", NodeExtrator())
         builder.add_node("edge_extractor", EdgeExtractor())
         # builder.add_node("graph_writer", GraphWriter())
@@ -34,7 +34,6 @@ class ProcessNotes:
         self.graph = builder.compile()
 
     async def __call__(self, request):
-        # LangGraph expects a state dict, not a Pydantic model
-        initial_state = {"transcript": request.notes}
+        initial_state = {"notes": request.notes}
         output = await self.graph.ainvoke(initial_state)
         return output

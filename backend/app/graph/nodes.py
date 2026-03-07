@@ -1,5 +1,6 @@
 from app.graph.base import BaseAgent
 from pydantic import BaseModel, Field
+from app.graph.state import NotesRequest
 
 
 class ExtractedEntity(BaseModel):
@@ -34,9 +35,8 @@ class NodeExtrator(BaseAgent):
     model_name = "gpt-4o-mini"
     prompt_name = "prompt_01"
 
-    async def __call__(self, state: dict):
-        transcript = state.get("transcript", "")
-        prompt_vars = {"transcripts": transcript}
+    async def __call__(self, state: NotesRequest):
+        prompt_vars = {"transcripts": state.notes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
         llm = self.model.with_structured_output(ExtractedEntities)
@@ -53,9 +53,9 @@ class EdgeExtractor(BaseAgent):
     model_name = "gpt-4o-mini"
     prompt_name = "prompt_02"
 
-    async def __call__(self, state):
+    async def __call__(self, state: NotesRequest):
 
-        prompt_vars = {"nodes": state["nodes"]}
+        prompt_vars = {"nodes": state.nodes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
         llm = self.model.with_structured_output(ExtractedEdges)
