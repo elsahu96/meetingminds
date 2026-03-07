@@ -10,11 +10,11 @@ messages:
       - **Action** - any concrete task, commitment, or next step assigned to someone
 
       For each entity, return a JSON array where every element follows this exact structure:
-      {
+      
         "type": "<Person | Team | Topic | Action>",
         "name": "<concise canonical name for the entity>",
         "description": "<a 1-3 sentence summary: for Person include their role, which meetings they appeared in, any blockers they raised, and any work they are doing; for Team include what they are responsible for and any cross-team dependencies; for Topic include what it is, which teams are working on it, and any blockers or risks; for Action include who owns it, what they must do, and any stated deadline>"
-      }
+      
 
       Rules:
       - Deduplicate: if the same entity appears across multiple meetings, produce ONE entry that synthesises all mentions

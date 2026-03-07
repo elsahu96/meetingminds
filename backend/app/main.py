@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(process_nodes,    tags=["process"])
+app.include_router(process_nodes, tags=["process"])
 
 
 @app.get("/health")

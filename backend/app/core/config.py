@@ -1,13 +1,12 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import os
 
 
 class Settings(BaseSettings):
-    # Anthropic
-    anthropic_api_key: str = ""
 
     # OpenAI
-    openai_api_key: str = ""
+    openai_api_key: str = os.getenv("OPENAI_API_KEY")
 
     # SurrealDB
     surrealdb_url: str = "ws://localhost:8000/rpc"
