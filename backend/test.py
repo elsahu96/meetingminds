@@ -8,6 +8,7 @@ import asyncio
 from pathlib import Path
 
 import httpx
+from app.db.client import SurrealDBClient
 
 # Path to meeting notes (project root is backend/..)
 NOTES_FILE = Path(__file__).resolve().parent.parent / "testing" / "meeting_notes" / "notes_01.txt"
@@ -52,6 +53,33 @@ async def main():
                     print(f"--- {k} ---")
                     print(data[k])
                     print()
+
+            # Check if entities were written to SurrealDB
+            print("--- Checking SurrealDB ---")
+            db_client = SurrealDBClient()
+            try:
+                await db_client.connect()
+                print("Connected to SurrealDB")
+
+                # Check each entity type
+                entity_types = ["person", "team", "topic", "action"]
+                for table in entity_types:
+                    nodes = await db_client.get_nodes(table)
+                    print(f"{table.capitalize()}s in DB: {len(nodes)}")
+                    if nodes:
+                        for node in nodes[:3]:  # Show first 3
+                            print(f"  - {node.get('name', 'Unknown')}: {node.get('description', '')[:50]}...")
+                        if len(nodes) > 3:
+                            print(f"  ... and {len(nodes) - 3} more")
+
+                # Check edges
+                edges = await db_client.get_edges("related_to")
+                print(f"Relationships in DB: {len(edges)}")
+
+            except Exception as e:
+                print(f"Could not check SurrealDB: {e}")
+                print("Make sure SurrealDB is running and configured correctly.")
+
         except httpx.ConnectError:
             print("Error: Could not connect to localhost:8000. Is the API server running?")
             print("Start it with: cd backend && uvicorn app.main:app --reload --port 8000")

@@ -37,7 +37,12 @@ class ProcessNotes:
 
     @traceable
     async def __call__(self, request):
-        initial_state = {"notes": request.notes}
+        initial_state = {
+            "notes": request.notes,
+            "nodes": [],
+            "edges": [],
+            "status": ""
+        }
         output = await self.graph.ainvoke(initial_state)
         return output
 
