@@ -53,7 +53,7 @@ class NodeExtrator(BaseAgent):
         llm = self.model.with_structured_output(ExtractedEntities)
         result = await llm.ainvoke(prompt)
         entities = result.entities if hasattr(result, "entities") else []
-        return {"extracted_entities": [e.model_dump() if hasattr(e, "model_dump") else e for e in entities]}
+        return {"nodes": [e.model_dump() if hasattr(e, "model_dump") else e for e in entities]}
 
 
 class EdgeExtractor(BaseAgent):
