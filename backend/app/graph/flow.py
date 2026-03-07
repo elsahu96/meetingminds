@@ -11,21 +11,25 @@ Nodes:
 TODO: implement each node function and wire into StateGraph.
 """
 
-from langchain_core.runnables import RunnableConfig
 from app.graph.state import NotesRequest, QueryRequest
-from langgraph.checkpoint.memory import MemorySaver
+from langsmith import traceable
 from langgraph.graph import END, StateGraph, START
-from app.graph.nodes import NodeExtrator, EdgeExtractor, GraphWriter
-import logging
-
-logger = logging.getLogger(__name__)
+from app.graph.nodes import (
+    EdgeExtractor,
+    GraphWriter,
+    NodeExtrator,
+    AgenticSearch,
+    InferAnswer,
+    SurrealQueryExecutor
+)
 
 
 # ─── Graph assembly ───────────────────────────────────────────────────────────
 
 
+@traceable
 class ProcessNotes:
-
+    @traceable
     def __init__(self):
         builder = StateGraph(NotesRequest)
         builder.add_node("node_extractor", NodeExtrator())
@@ -36,37 +40,41 @@ class ProcessNotes:
         builder.add_edge("node_extractor", "edge_extractor")
         builder.add_edge("edge_extractor", "graph_writer")
         builder.add_edge("graph_writer", END)
-        checkpointer = MemorySaver()
-        self.graph = builder.compile(checkpointer=checkpointer)
+        self.graph = builder.compile()
 
+    @traceable
     async def __call__(self, request):
-        initial_state = {"notes": request.notes, "nodes": [], "edges": [], "status": ""}
-        config: RunnableConfig = {"configurable": {"thread_id": "1"}}
-
-        output = await self.graph.ainvoke(initial_state, config)
-
-        state = self.graph.get_state(config)
-        state_history = list(self.graph.get_state_history(config))
-        logger.info(f"State: {state}")
-        # print state_history
-        logger.info(f"State history {state_history[0]}")
-
+        initial_state = {"notes": request.notes}
+        output = await self.graph.ainvoke(initial_state)
         return output
 
+class Query:
 
-# class Query:
-#     def __init__(self):
-#         builder = StateGraph(QueryRequest)
-#         builder.add_node("agentic_search", AgenticSearch())
-#         builder.add_node("answer_inferral", InferAnswer())
+    @traceable
+    def __init__(self):
+        def route_start(state: QueryRequest):
+            if state.surreal_query:
+                return "surreal_query_executor"
+            if state.question:
+                return "agentic_search"
+            return END
 
-#         builder.add_edge(START, "node_extractor")
-#         builder.add_edge("node_extractor", "edge_extractor")
-#         builder.add_edge("edge_extractor", "graph_writer")
-#         builder.add_edge("graph_writer", END)
-#         self.graph = builder.compile()
+        builder = StateGraph(QueryRequest)
+        builder.add_node("agentic_search", AgenticSearch())
+        builder.add_node("surreal_query_executor", SurrealQueryExecutor())
+        builder.add_node("answer_inferral", InferAnswer())
 
-#     async def __call__(self, request):
-#         initial_state = {"notes": request.notes}
-#         output = await self.graph.ainvoke(initial_state)
-#         return output
+        builder.add_conditional_edges(START, route_start)
+        builder.add_edge("agentic_search", "surreal_query_executor")
+        builder.add_edge("surreal_query_executor", "answer_inferral")
+        builder.add_edge("answer_inferral", END)
+        self.graph = builder.compile()
+
+    @traceable
+    async def __call__(self, request):
+        initial_state = {
+            "question": getattr(request, "question", None),
+            "surreal_query": getattr(request, "surreal_query", None),
+        }
+        output = await self.graph.ainvoke(initial_state)
+        return output
