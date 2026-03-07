@@ -27,6 +27,9 @@ export const apiClient = {
   /** Get single-point-of-failure analysis */
   getRisk: () => api.get("/risk/single-point-of-failure").then((r) => r.data),
 
+  /** Get graph data */
+  getGraph: () => api.get<GraphDataResponse>("/graph").then((r) => r.data),
+
   /** Process notes through the LangGraph pipeline */
   processNotes: (req: {
     notes: string;

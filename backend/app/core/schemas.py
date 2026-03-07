@@ -6,8 +6,8 @@ from datetime import datetime
 
 # ─── Graph ────────────────────────────────────────────────────────────────────
 
-NodeType = Literal["person", "meeting", "action", "decision", "blocker", "topic"]
-EdgeType = Literal["committed", "originated", "blocks", "contradicts"]
+NodeType = Literal["person", "meeting", "action", "decision", "blocker", "topic", "team"]
+EdgeType = Literal["assigned_to", "blocked_by", "helps_to_achieve", "reports_to", "work_for"]
 
 
 class NodeTooltip(BaseModel):
