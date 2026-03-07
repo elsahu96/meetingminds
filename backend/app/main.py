@@ -2,11 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 
-from app.api import graph
-from app.api import ingest
-from app.api import process_notes
-from app.api import query
-from app.api import websocket
+import app.api.graph as graph
+import app.api.ingest as ingest
+import app.api.process_notes as process_notes
+import app.api.query as query
+import app.api.websocket as websocket
 
 settings = get_settings()
 
