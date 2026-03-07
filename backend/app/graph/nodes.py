@@ -15,6 +15,19 @@ class ExtractedEntities(BaseModel):
         default_factory=list, description="List of extracted entities"
     )
 
+class ExtractedEdge(BaseModel):
+    from_id: str = Field(description="Source node ID in format 'Type:Name'")
+    rel_type: str = Field(description="Relationship type")
+    to_id: str = Field(description="Target node ID in format 'Type:Name'")
+
+
+class ExtractedEdges(BaseModel):
+    """JSON array of extracted edges from nodes."""
+
+    edges: list[ExtractedEdge] = Field(
+        default_factory=list, description="List of extracted edges"
+    )
+
 
 class NodeExtrator(BaseAgent):
 
@@ -29,10 +42,9 @@ class NodeExtrator(BaseAgent):
         llm = self.model.with_structured_output(ExtractedEntities)
         result = await llm.ainvoke(prompt)
         return {
-            "extracted_entities": (
+            "nodes": (
                 result.entities if hasattr(result, "entities") else []
-            ),
-            "attribute": result,
+            )
         }
 
 
@@ -43,16 +55,15 @@ class EdgeExtractor(BaseAgent):
 
     async def __call__(self, state):
 
-        prompt_vars = {"transcripts": state.get("transcript", "")}
+        prompt_vars = {"nodes": state["nodes"]}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
-        llm = self.model.with_structured_output(ExtractedEntities)
+        llm = self.model.with_structured_output(ExtractedEdges)
         result = await llm.ainvoke(prompt)
         return {
-            "extracted_entities": (
-                result.entities if hasattr(result, "entities") else []
-            ),
-            "attribute": result,
+            "edges": (
+                result.edges if hasattr(result, "edges") else []
+            )
         }
 
 
@@ -66,7 +77,7 @@ class GraphWriter(BaseAgent):
         prompt_vars = {"transcripts": state.get("transcript", "")}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
-        llm = self.model.with_structured_output(ExtractedEntities)
+        llm = self.model.with_structured_output(ExtractedEdge)
         result = await llm.ainvoke(prompt)
         return {
             "extracted_entities": (

@@ -5,11 +5,11 @@ messages:
 
       ### OUTPUT FORMAT
       Return a JSON array of edge objects — no commentary, explanation, or markdown formatting. Each edge must have exactly these three fields:
-      {
+      {{
         "from_id": "<type>:<name>",
         "rel_type": "<relationship_type>",
         "to_id": "<type>:<name>"
-      }
+      }}
 
       ### RELATIONSHIP TYPES
       Only use the following rel_type values, and only between the permitted node type pairs:
