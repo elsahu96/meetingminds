@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Transcript, GraphNode, GraphEdge } from '@/types'
 import { SEED_TRANSCRIPTS, SEED_NODES, SEED_EDGES } from '@/lib/seedData'
 import { useProcessing } from '@/hooks/useProcessing'
+import { apiClient } from '@/lib/api'
 import Topbar        from '@/components/Topbar'
 import StatusBar     from '@/components/StatusBar'
 import GraphToolbar  from '@/components/GraphToolbar'
@@ -22,6 +23,37 @@ export default function App() {
   const [highlighted,  setHighlighted]  = useState<string | null>(null)
 
   const { processing, allDone, steps, showDelta, runProcessing } = useProcessing()
+
+  // Fetch graph data from API on component mount
+  useEffect(() => {
+    const fetchGraphData = async () => {
+      try {
+        const graphData = await apiClient.getGraph()
+        if (graphData.nodes && graphData.nodes.length > 0) {
+          setGraphNodes(graphData.nodes)
+        }
+        if (graphData.edges && graphData.edges.length > 0) {
+          setGraphEdges(graphData.edges)
+        }
+      } catch (error) {
+        console.warn('Failed to fetch graph data from API, using seed data:', error)
+        // Keep seed data as fallback
+      }
+    }
+
+    fetchGraphData()
+  }, [])
+
+  // Function to refresh graph data
+  const refreshGraph = useCallback(async () => {
+    try {
+      const graphData = await apiClient.getGraph()
+      setGraphNodes(graphData.nodes || [])
+      setGraphEdges(graphData.edges || [])
+    } catch (error) {
+      console.error('Failed to refresh graph data:', error)
+    }
+  }, [])
 
   // ── Transcript management ──────────────────────────────────────────────────
   const addTranscripts = useCallback((files: File[]) => {
@@ -121,7 +153,7 @@ export default function App() {
 
         {/* ── Right panel: graph ── */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <GraphToolbar />
+          <GraphToolbar onRefresh={refreshGraph} />
           <ForceGraph
             nodes={graphNodes}
             edges={graphEdges}
