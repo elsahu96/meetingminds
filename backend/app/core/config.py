@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     surrealdb_pass: str = "root"
 
     # LangSmith
-    langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
+    langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "true")
     langsmith_api_key: str = os.getenv("LANGSMITH_API_KEY")
     langsmith_project: str = os.getenv("LANGSMITH_PROJECT", "MeetingMinds")
     langsmith_endpoint: str = os.getenv(
