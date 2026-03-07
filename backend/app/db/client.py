@@ -19,9 +19,9 @@ class SurrealDBClient:
 
     async def connect(self) -> None:
         self.db = AsyncSurreal(settings.surrealdb_url)
+        await self.db.connect()
         await self.db.signin({"username": settings.surrealdb_user, "password": settings.surrealdb_pass})
         await self.db.use(settings.surrealdb_namespace, settings.surrealdb_database)
-        await self.db.connect()
 
     async def query(self, surql: str, vars: dict | None = None) -> list:
         return await self.db.query(surql, vars or {})
@@ -39,9 +39,10 @@ class SurrealDBClient:
         """
         if record_id is not None:
             node = f"{table}:{record_id}"
-            return await self.db.select(node)
-        res = await self.db.select(table)
-        return res or []
+            result = await self.db.query(f"SELECT *, id FROM {node}")
+            return result[0] if result else {}
+        result = await self.db.query(f"SELECT *, id FROM {table}")
+        return result or []
 
     async def get_edges(
         self,
@@ -61,19 +62,19 @@ class SurrealDBClient:
             list of edge records
         """
         if from_id is None and to_id is None:
-            return await self.db.query(f"SELECT * FROM {rel_type};")
+            return await self.db.query(f"SELECT *, id FROM {rel_type};")
         if from_id is not None and to_id is not None:
             return await self.db.query(
-                f"SELECT * FROM {rel_type} WHERE in = $from_id AND out = $to_id;",
+                f"SELECT *, id FROM {rel_type} WHERE in = $from_id AND out = $to_id;",
                 {"from_id": from_id, "to_id": to_id},
             )
         if from_id is not None:
             return await self.db.query(
-                f"SELECT * FROM {rel_type} WHERE in = $from_id;",
+                f"SELECT *, id FROM {rel_type} WHERE in = $from_id;",
                 {"from_id": from_id},
             )
         return await self.db.query(
-            f"SELECT * FROM {rel_type} WHERE out = $to_id;",
+            f"SELECT *, id FROM {rel_type} WHERE out = $to_id;",
             {"to_id": to_id},
         )
 
