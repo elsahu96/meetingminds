@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     # Anthropic
     anthropic_api_key: str = ""
 
+    # OpenAI
+    openai_api_key: str = ""
+
     # SurrealDB
     surrealdb_url: str = "ws://localhost:8000/rpc"
     surrealdb_namespace: str = "meetingmind"

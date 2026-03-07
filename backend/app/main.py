@@ -1,12 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-
-import app.api.graph as graph
-import app.api.ingest as ingest
-import app.api.process_notes as process_notes
-import app.api.query as query
-import app.api.websocket as websocket
+from app.api.process_notes import router as process_nodes
 
 settings = get_settings()
 
@@ -24,11 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(ingest.router,    tags=["ingest"])
-app.include_router(query.router,     tags=["query"])
-app.include_router(graph.router,     tags=["graph"])
-app.include_router(process_notes.router, tags=["process-notes"])
-app.include_router(websocket.router, tags=["websocket"])
+app.include_router(process_nodes.router,    tags=["process"])
 
 
 @app.get("/health")

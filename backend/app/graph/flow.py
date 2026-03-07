@@ -33,31 +33,4 @@ class ProcessNotes:
     async def __call__(self, request):
         output = await self.graph.ainvoke(request)
         return output
-
-
-async def run_ingest(req) -> dict:
-    """Entry point for the ingest API route."""
-    graph = build_graph()
-    result = await graph.ainvoke(
-        {
-            "transcript": req.transcript,
-            "meeting_title": req.meeting_title,
-            "meeting_date": req.meeting_date,
-            "mode": "ingest",
-        },
-        config={"configurable": {"thread_id": req.meeting_date}},
-    )
-    return result
-
-
-async def run_query(req) -> dict:
-    """Entry point for the query API route."""
-    graph = build_graph()
-    result = await graph.ainvoke(
-        {
-            "query": req.question,
-            "mode": "query",
-        },
-        config={"configurable": {"thread_id": req.thread_id or "default"}},
-    )
-    return result
+        
