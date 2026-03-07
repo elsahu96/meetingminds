@@ -1,0 +1,30 @@
+Meeting 7 — Growth Team Strategy Session
+Date & Time: Friday, February 7, 2026 | 10:00 AM
+Attendees: Lena Kovacs (Head of Growth), Tariq Salim (Growth Engineer), Chloe Barnes (User Research), Victor Nguyen (Revenue Ops)
+Transcript
+
+
+Lena Kovacs: We have forty-five minutes. I want to cover three things: recommendation engine status, referral programme, and our Q2 activation targets. Let's be honest about what's on track and what isn't. Tariq, recommendation engine.
+Tariq Salim: The recommendation engine is further along than I would have expected three weeks ago. The ML foundation is solid — I've been collaborating closely with Nina from the data team on the feature store, and the training pipeline for the initial model is mostly designed. I'm working on the serving layer on my side, which connects the real-time recommendations to the product UI.
+Lena Kovacs: Is the serving layer something Growth should be building, or should that be Engineering?
+Tariq Salim: That's an open question. I've been doing it because I needed to move fast, but it has infrastructure implications that might be better owned by the platform team. I haven't had that conversation with Greg Thorn yet.
+Lena Kovacs: Let's resolve that this week. What's the blocker on your end?
+Tariq Salim: I need a feature flag approval to gate the recommendation engine behind an experiment flag before we push to production. I submitted the request to Clara Whitfield's team last week. Without it, I can't release to even one percent of users — everything would go live at once, which is too risky for a first launch. I need that approval to proceed with any production testing.
+Lena Kovacs: I'll follow up with Clara directly after this meeting. Feature flag requests shouldn't sit for more than a couple of days. Chloe, your turn. What came out of the user research?
+Chloe Barnes: I ran eight in-depth interviews last week, all with power users — people who log in more than three times a week. The insight that surprised me most was about recommendation relevance. Users don't want recommendations based purely on historical behaviour — what they bought last month. They want recommendations that are contextual to what they're trying to do right now, in this session. One user put it well: she said it's the difference between a good search result and a good ad. The ad knows your history; the search result knows your intent.
+Tariq Salim: That's a significant design implication. Right now the model Nina and I are building is behaviour-based — it uses historical interaction data to predict what a user might want next. Adding session-level context would require real-time signals we're not currently capturing.
+Chloe Barnes: I thought that might be the case. The question is whether it's worth adding to the first version or whether we ship the behaviour-based model first and iterate.
+Lena Kovacs: My instinct is to ship the simpler model first and not delay the launch. But Chloe, has Nina's team seen this research?
+Chloe Barnes: No — I finished writing it up yesterday. I wasn't sure who to send it to.
+Tariq Salim: Send it to me and I'll make sure Nina gets it. It's directly relevant to how the feature store is structured.
+Victor Nguyen: Before we move on — from a revenue perspective, the recommendation engine's commercial value depends entirely on what it's recommending. If it's recommending products with high margins and high conversion rates, the uplift to revenue is significant. If it's just recommending similar products the user has already seen, the conversion uplift is minimal. Have we defined which SKUs and use cases are in scope for the first version?
+Lena Kovacs: Not formally. Tariq, do you have a view?
+Tariq Salim: I've been scoping it as 'all eligible products' but that might be too broad for a first version. If Finance needs to model specific SKU-level revenue uplift, we should narrow it.
+Victor Nguyen: I need a defined scope to build the revenue attribution model. Without it, I can't quantify the expected impact and I can't include it in the Q2 forecast. The finance team needs that number.
+Lena Kovacs: Okay — Tariq, let's define an MVP scope for the recommendation engine by Wednesday. Victor and I will align on which product categories to prioritise and I'll share that with you.
+Victor Nguyen: Moving to the referral programme — that one is more significantly blocked. The tracking mechanism depends on a user identity field — the external account reference ID — that isn't currently exposed in our data model. Without it, I can't attribute referrals to the right accounts and the whole tracking breaks down. I raised it with Marcus Flynn in data engineering about two weeks ago. He told me it would come in the next migration cycle, but I haven't heard anything since.
+Tariq Salim: The migration blockers might be related to the CRM connector issue. I overheard something about it being delayed end of month.
+Victor Nguyen: If the migration slips, the referral programme slips too. And we have a sales motion attached to the referral programme — Jake's team is supposed to start offering referral incentives to existing accounts in March.
+Lena Kovacs: That's a hard dependency I wasn't fully tracking. I'll set up a call with Marcus to understand the real timeline. Victor, is there any version of the referral programme you can build that doesn't depend on the account reference ID?
+Victor Nguyen: Partially. I could use email as the attribution key but it's unreliable — people use multiple emails and it inflates referral counts. I'd rather not build something we know is inaccurate.
+Lena Kovacs: Fair. Let's not build the wrong thing. I'll get clarity on the data migration timeline this week and we'll adjust the referral launch date if needed. Victor, get me a list of what you need from data engineering to unblock yourself completely.
