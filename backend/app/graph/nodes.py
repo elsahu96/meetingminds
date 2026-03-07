@@ -51,7 +51,7 @@ class NodeExtrator(BaseAgent):
 class EdgeExtractor(BaseAgent):
 
     model_name = "gpt-4o-mini"
-    prompt_name = "prompt_01"
+    prompt_name = "prompt_02"
 
     async def __call__(self, state):
 
