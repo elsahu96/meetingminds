@@ -23,12 +23,12 @@ class ProcessNotes:
     def __init__(self):
         builder = StateGraph(MeetingMindState)
         builder.add_node("node_extractor", NodeExtrator())
-        # builder.add_node("edge_extractor", EdgeExtractor())
+        builder.add_node("edge_extractor", EdgeExtractor())
         # builder.add_node("graph_writer", GraphWriter())
 
         builder.add_edge(START, "node_extractor")
-        builder.add_edge("node_extractor", END)
-        # builder.add_edge("node_extractor", "edge_extractor")
+        builder.add_edge("node_extractor", "edge_extractor")
+        builder.add_edge("edge_extractor", END)
         # builder.add_edge("edge_extractor", "graph_writer")
         # builder.add_edge("graph_writer", END)
         self.graph = builder.compile()
