@@ -1,6 +1,16 @@
 from app.graph.base import BaseAgent
 from pydantic import BaseModel, Field
 from app.graph.state import NotesRequest
+from app.db.client import SurrealDBClient
+
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 class ExtractedEntity(BaseModel):
@@ -67,21 +77,30 @@ class EdgeExtractor(BaseAgent):
         }
 
 
-class GraphWriter(BaseAgent):
+class GraphWriter:
 
-    model_name = "gpt-4o-mini"
-    prompt_name = "prompt_01"
+    def __init__(self):
+        self.db = SurrealDBClient()
 
-    async def __call__(self, state):
+    async def __call__(self, state: NotesRequest):
 
-        prompt_vars = {"transcripts": state.get("transcript", "")}
-        prompt = self.prompt_template.format_messages(**prompt_vars)
+        logger.info("Creating nodes")
+        for node in state.nodes:
+            logger.info(f"Processing node: {node}")
+            record = await self.db.create_node(
+                table=node["type"].lower(),
+                record_id=node["name"].lower().replace(" ", "_"),
+                data=node
+            )
+            logger.info(f"Recorded node: {record}")
 
-        llm = self.model.with_structured_output(ExtractedEdge)
-        result = await llm.ainvoke(prompt)
-        return {
-            "extracted_entities": (
-                result.entities if hasattr(result, "entities") else []
-            ),
-            "attribute": result,
-        }
+        for edge in state.edges:
+            logger.info(f"Processing edge: {edge}")
+            await self.db.create_edge(
+                from_id=edge["from_id"].lower().replace(" ", "_"),
+                rel_type=edge["rel_type"],
+                to_id=edge["to_id"].lower().replace(" ", "_"),
+            )
+            logger.info(f"Recorded edge: {edge}")
+
+
