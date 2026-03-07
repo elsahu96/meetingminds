@@ -1,0 +1,9 @@
+messages:
+  - role: system
+    content: |
+      System Prompt
+  - role: human
+    content: |
+      Human Prompt
+      {variable_name}
+input_variables: ["variable_name"]

@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --glow: 0 0 20px rgba(0, 212, 255, 0.18);
+    --glow-red: 0 0 16px rgba(255, 77, 106, 0.35);
+  }
+
+  html, body, #root {
+    @apply h-full overflow-hidden bg-bg text-txt;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  * {
+    @apply box-border m-0 p-0;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { @apply bg-border rounded; }
+}
+
+@layer components {
+  /* ── Typography ── */
+  .font-mono    { font-family: 'IBM Plex Mono', monospace; }
+  .font-display { font-family: 'Bebas Neue', sans-serif; }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-flex items-center rounded px-2 py-0.5 text-[10px] font-medium tracking-widest font-mono;
+  }
+  .badge-live {
+    @apply badge;
+    background: rgba(0, 229, 160, 0.12);
+    color: theme('colors.green');
+    border: 1px solid rgba(0, 229, 160, 0.25);
+  }
+  .badge-db {
+    @apply badge;
+    background: rgba(124, 58, 237, 0.12);
+    color: theme('colors.indigo');
+    border: 1px solid rgba(124, 58, 237, 0.25);
+  }
+
+  /* ── Buttons ── */
+  .btn-top {
+    @apply font-mono text-[10px] tracking-wide px-3 py-1 rounded border border-border text-txt-mid bg-transparent transition-all duration-150 cursor-pointer;
+  }
+  .btn-top:hover { @apply border-accent text-accent; }
+
+  .btn-process {
+    @apply font-mono text-[11px] font-semibold tracking-widest uppercase rounded py-2 px-4 border-none cursor-pointer transition-all duration-150;
+    background: theme('colors.accent');
+    color: theme('colors.bg');
+  }
+  .btn-process:hover:not(:disabled) {
+    background: #33ddff;
+    box-shadow: var(--glow);
+  }
+  .btn-process:disabled {
+    @apply bg-border text-txt-dim cursor-not-allowed;
+    box-shadow: none;
+  }
+  .btn-process.done {
+    background: rgba(0, 229, 160, 0.15);
+    color: theme('colors.green');
+    border: 1px solid rgba(0, 229, 160, 0.3);
+  }
+
+  .btn-send {
+    @apply font-mono text-[11px] font-semibold tracking-widest rounded py-2 px-4 border-none cursor-pointer transition-all duration-150 whitespace-nowrap;
+    background: theme('colors.accent');
+    color: theme('colors.bg');
+  }
+  .btn-send:hover { background: #33ddff; }
+
+  /* ── Tabs ── */
+  .panel-tab {
+    @apply font-mono text-[10px] tracking-widest uppercase text-txt-dim py-2.5 px-4 cursor-pointer bg-transparent border-none border-b-2 border-transparent transition-all duration-150;
+  }
+  .panel-tab.active {
+    @apply text-accent;
+    border-bottom-color: theme('colors.accent');
+  }
+  .panel-tab:hover:not(.active) { @apply text-txt-mid; }
+
+  /* ── Status chips ── */
+  .chip {
+    @apply font-mono text-[9px] tracking-wide rounded px-1.5 py-0.5 whitespace-nowrap inline-flex items-center;
+  }
+  .chip-ready      { @apply chip text-txt-dim; background: rgba(255,255,255,.04); }
+  .chip-queued     { @apply chip; color: theme('colors.amber'); background: rgba(245,166,35,.1); }
+  .chip-processing { @apply chip text-accent; background: rgba(0,212,255,.1); }
+  .chip-done       { @apply chip; color: theme('colors.green'); background: rgba(0,229,160,.1); }
+
+  /* ── Drop zone ── */
+  .drop-zone {
+    @apply flex flex-col items-center justify-center gap-2 rounded cursor-pointer transition-all duration-200;
+    border: 1.5px dashed theme('colors.border-hi');
+    background: rgba(0, 212, 255, 0.02);
+  }
+  .drop-zone:hover, .drop-zone.over {
+    border-color: theme('colors.accent');
+    background: rgba(0, 212, 255, 0.05);
+    box-shadow: var(--glow);
+  }
+
+  /* ── Transcript card ── */
+  .t-card {
+    @apply rounded border border-border overflow-hidden flex-shrink-0 animate-fadeSlide;
+    background: theme('colors.bg');
+  }
+  .t-card-input {
+    @apply bg-bg border-none border-b border-border outline-none text-txt text-[11px] py-0.5 px-1 transition-all duration-150 min-w-0 w-full;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .t-card-input:focus  { border-bottom-color: theme('colors.accent'); }
+  .t-card-input::placeholder { @apply text-txt-dim; }
+  .t-card-input.mono   { @apply font-mono text-[10px] text-txt-mid; }
+  .t-progress-bar { @apply h-0.5; background: theme('colors.border'); }
+  .t-progress-fill {
+    @apply h-full transition-all duration-300 ease-out;
+    background: theme('colors.accent');
+    box-shadow: var(--glow);
+  }
+
+  .card-ta {
+    @apply bg-bg border-none outline-none text-txt text-[11px] leading-relaxed resize-none;
+  }
+
+  /* ── Extract step ── */
+  .e-step {
+    @apply flex items-start gap-2 px-2.5 py-1.5 rounded font-mono text-[10px] animate-fadeSlide;
+  }
+  .e-step-done   { background: rgba(0, 229, 160, 0.05); }
+  .e-step-active { background: rgba(0, 212, 255, 0.05); }
+  .e-step-warn   { background: rgba(245, 166, 35, 0.06); }
+
+  /* ── Delta cards ── */
+  .delta-card {
+    @apply rounded flex flex-col gap-1 px-2.5 py-2;
+    background: theme('colors.bg');
+    border: 1px solid theme('colors.border');
+    border-left-width: 3px;
+  }
+  .delta-overdue { border-left-color: theme('colors.red'); }
+  .delta-contra  { border-left-color: theme('colors.indigo'); }
+  .delta-blocker { border-left-color: theme('colors.amber'); }
+
+  /* ── Chat ── */
+  .bubble-user  {
+    background: rgba(0, 212, 255, 0.09);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+  }
+  .bubble-agent {
+    background: theme('colors.surface2');
+    border: 1px solid theme('colors.border');
+  }
+  .cite-pill {
+    @apply font-mono text-[9px] tracking-wide rounded-full px-2 py-0.5 cursor-pointer transition-all duration-150;
+    color: theme('colors.indigo');
+    background: rgba(129, 140, 248, 0.1);
+    border: 1px solid rgba(129, 140, 248, 0.25);
+  }
+  .cite-pill:hover { background: rgba(129, 140, 248, 0.22); }
+
+  .hl-pill {
+    display: inline;
+    background: rgba(0, 229, 160, 0.1);
+    color: theme('colors.green');
+    @apply rounded px-1 font-mono text-[11px];
+  }
+
+  .chat-input {
+    @apply w-full rounded border border-border outline-none text-txt text-base py-2 px-3 transition-all duration-150;
+    background: theme('colors.surface');
+    font-family: 'DM Sans', sans-serif;
+  }
+  .chat-input:focus { border-color: theme('colors.accent'); }
+
+  /* ── Risk badge ── */
+  .risk-badge {
+    @apply flex items-center gap-2 rounded px-2.5 py-1 cursor-pointer transition-all duration-200;
+    background: rgba(255, 77, 106, 0.08);
+    border: 1px solid rgba(255, 77, 106, 0.25);
+    color: theme('colors.red');
+  }
+  .risk-badge:hover { background: rgba(255, 77, 106, 0.14); }
+
+  /* ── Graph tooltip ── */
+  .graph-tooltip {
+    @apply fixed rounded font-mono text-[10px] pointer-events-none z-50 leading-relaxed;
+    background: theme('colors.surface');
+    border: 1px solid theme('colors.border-hi');
+    padding: 10px 14px;
+    max-width: 220px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  }
+
+  /* ── Graph grid background ── */
+  .graph-bg {
+    background-image:
+      linear-gradient(rgba(26,36,51,.55) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,36,51,.55) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
