@@ -60,7 +60,8 @@ export function useProcessing(): UseProcessingReturn {
 
     apiClient
       .processNotes({ notes, nodes: [], edges: [], status: '' })
-      .then((res) => {
+      .then(() => apiClient.getGraph())
+      .then((graphData) => {
         if (tickerRef.current) clearInterval(tickerRef.current)
         setTranscripts(prev =>
           prev.map(t => ({ ...t, status: 'done' as const, progress: 100 }))
@@ -68,26 +69,7 @@ export function useProcessing(): UseProcessingReturn {
         setProcessing(false)
         setAllDone(true)
         setShowDelta(true)
-        // Use returned nodes/edges if present and in expected shape, else demo data
-        const nodes = Array.isArray(res?.nodes) && res.nodes.length > 0
-          ? (res.nodes as GraphNode[])
-          : [{
-              id: 'a21',
-              type: 'action' as const,
-              label: 'payments+1day',
-              overdue: true,
-              tooltip: {
-                type: 'ACTION',
-                name: 'Payments (+1 day)',
-                role: 'Alice · Mar 13',
-                commits: 'pending',
-                risk: 'medium',
-              },
-            }]
-        const edges = Array.isArray(res?.edges) && res.edges.length > 0
-          ? (res.edges as GraphEdge[])
-          : [{ source: 'alice', target: 'a21', type: 'committed' as const }]
-        onNewNodes(nodes, edges)
+        onNewNodes(graphData.nodes ?? [], graphData.edges ?? [])
       })
       .catch((err) => {
         if (tickerRef.current) clearInterval(tickerRef.current)

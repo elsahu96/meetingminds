@@ -1,3 +1,5 @@
+import React from 'react'
+
 const STATS = [
   { label: 'Meetings',       value: '2',  color: undefined },
   { label: 'People',         value: '4',  color: undefined },
@@ -13,10 +15,9 @@ export default function StatusBar() {
       style={{ height: 26, padding: '0 16px', gap: 16, background: 'var(--surface)' }}
     >
       {STATS.map((s, i) => (
-        <>
-          {i > 0 && <div key={`sep-${i}`} style={{ width: 1, height: 12, background: 'var(--border)' }} />}
+        <React.Fragment key={s.label}>
+          {i > 0 && <div style={{ width: 1, height: 12, background: 'var(--border)' }} />}
           <div
-            key={s.label}
             className="flex items-center font-mono"
             style={{ fontSize: 9, letterSpacing: .8, color: 'var(--txt-dim)', textTransform: 'uppercase', gap: 4 }}
           >
@@ -25,7 +26,7 @@ export default function StatusBar() {
               {s.value}
             </span>
           </div>
-        </>
+        </React.Fragment>
       ))}
 
       <a

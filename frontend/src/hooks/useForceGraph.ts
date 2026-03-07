@@ -45,7 +45,14 @@ export function useForceGraph(
         ? { ...n, x: old.x, y: old.y, vx: old.vx, vy: old.vy }
         : { ...n, x: dims.w * (0.25 + Math.random() * 0.5), y: dims.h * (0.25 + Math.random() * 0.5) }
     })
-    const simEdges: GraphEdge[] = edges.map(e => ({ ...e }))
+    const nodeIds = new Set(simNodes.map(n => n.id))
+    const simEdges: GraphEdge[] = edges
+      .filter(e => {
+        const src = typeof e.source === 'string' ? e.source : (e.source as GraphNode).id
+        const tgt = typeof e.target === 'string' ? e.target : (e.target as GraphNode).id
+        return nodeIds.has(src) && nodeIds.has(tgt)
+      })
+      .map(e => ({ ...e }))
 
     simRef.current?.stop()
     if (rafRef.current) clearInterval(rafRef.current)
