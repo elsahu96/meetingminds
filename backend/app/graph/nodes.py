@@ -87,25 +87,36 @@ class GraphWriter:
         if self.db.db is None:
             await self.db.connect()
 
+        def _as_dict(obj):
+            if isinstance(obj, dict):
+                return obj
+            if hasattr(obj, "model_dump"):
+                return obj.model_dump()
+            if hasattr(obj, "dict"):
+                return obj.dict()
+            raise TypeError(f"Unsupported node/edge type: {type(obj)!r}")
+
         logger.info("Creating nodes")
-        for node in state.nodes:
-            logger.info(f"Processing node: {node}")
+        for node in (state.nodes or []):
+            node_data = _as_dict(node)
+            logger.info(f"Processing node: {node_data}")
             record = await self.db.create_node(
-                table=node["type"].lower(),
-                record_id=node["name"].lower().replace(" ", "_").replace("-",""),
-                data=node
+                table=node_data["type"].lower(),
+                record_id=node_data["name"].lower().replace(" ", "_").replace("-", ""),
+                data=node_data
             )
             logger.info(f"Recorded node: {record}")
 
-        for edge in state.edges:
-            logger.info(f"Processing edge: {edge}")
+        for edge in (state.edges or []):
+            edge_data = _as_dict(edge)
+            logger.info(f"Processing edge: {edge_data}")
             record = await self.db.create_edge(
-                from_id=edge["from_id"].lower().replace(" ", "_").replace("-",""),
-                rel_type=edge["rel_type"],
-                to_id=edge["to_id"].lower().replace(" ", "_").replace("-",""),
+                from_id=edge_data["from_id"].lower().replace(" ", "_").replace("-", ""),
+                rel_type=edge_data["rel_type"],
+                to_id=edge_data["to_id"].lower().replace(" ", "_").replace("-", ""),
             )
             logger.info(f"Recorded edge: {record}")
 
-        return {"status": "success"}
+        return {"status": "Nodes and edges recorded successfully"}
 
 

@@ -12,7 +12,11 @@ messages:
       For each entity, return a JSON array where every element follows this exact structure:
 
         "type": "<Person | Team | Topic | Action>",
-        "name": "<concise canonical name for the entity>",
+        "name": "<concise canonical name for the entity:
+        for Person use full name,
+        for Team use team name,
+        for Topic use topic name,
+        for Action use action item without owner's name>",
         "description": "<a 5-7 sentence summary: 
         for Person include their role, what actions they are taking, who are they reporting to or being reported to, which teams they are part of, which meetings they appeared in, any blockers they raised, and any work they are doing; 
         for Team include what they are responsible for and any cross-team dependencies, what other teams they depend on or are depended on by; 
@@ -21,6 +25,7 @@ messages:
 
 
       Rules:
+      - For Action name ONLY include the action item and EXCLUDE the owner's name.
       - Use people or team's name in description, not just "some people" or "the team".
       - Deduplicate: if the same entity appears across multiple meetings, produce ONE entry that synthesises all mentions
       - Canonical names: use the most complete form of a name (e.g. "Priya Nair" not "Priya")

@@ -13,3 +13,9 @@ class NotesRequest(BaseModel):
     nodes: list = None
     edges: list = None
     status: str = None
+
+class QueryRequest(BaseModel):
+    question: str
+    graph_information: list = None
+    response: str = None
+
