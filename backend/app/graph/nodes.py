@@ -1,6 +1,6 @@
 from app.graph.base import BaseAgent
 from pydantic import BaseModel, Field
-from app.graph.state import NotesRequest
+from app.graph.state import NotesRequest, QueryRequest
 from app.db.client import SurrealDBClient
 
 import logging
@@ -114,3 +114,10 @@ class GraphWriter:
         return {"status": "Nodes and edges recorded successfully"}
 
 
+class AgenticSearch(BaseModel):
+    model_name = "gpt-4o-mini"
+    prompt_name = "prompt_03"
+
+    async def __call__(self, state: QueryRequest):
+
+        pass
