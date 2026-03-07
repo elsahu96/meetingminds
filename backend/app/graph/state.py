@@ -12,3 +12,4 @@ class NotesRequest(BaseModel):
     notes: str
     nodes: list = None
     edges: list = None
+    status: str = None

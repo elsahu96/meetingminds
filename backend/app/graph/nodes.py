@@ -84,23 +84,28 @@ class GraphWriter:
 
     async def __call__(self, state: NotesRequest):
 
+        if self.db.db is None:
+            await self.db.connect()
+
         logger.info("Creating nodes")
         for node in state.nodes:
             logger.info(f"Processing node: {node}")
             record = await self.db.create_node(
                 table=node["type"].lower(),
-                record_id=node["name"].lower().replace(" ", "_"),
+                record_id=node["name"].lower().replace(" ", "_").replace("-",""),
                 data=node
             )
             logger.info(f"Recorded node: {record}")
 
         for edge in state.edges:
             logger.info(f"Processing edge: {edge}")
-            await self.db.create_edge(
-                from_id=edge["from_id"].lower().replace(" ", "_"),
+            record = await self.db.create_edge(
+                from_id=edge["from_id"].lower().replace(" ", "_").replace("-",""),
                 rel_type=edge["rel_type"],
-                to_id=edge["to_id"].lower().replace(" ", "_"),
+                to_id=edge["to_id"].lower().replace(" ", "_").replace("-",""),
             )
-            logger.info(f"Recorded edge: {edge}")
+            logger.info(f"Recorded edge: {record}")
+
+        return {"status": "success"}
 
 
