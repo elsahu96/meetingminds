@@ -24,13 +24,10 @@ npm run dev
 ### Backend
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env        # fill in your keys
-uvicorn app.main:app --reload
-# → http://localhost:8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --env-file .env
 ```
+
+
 
 ## Stack
 
