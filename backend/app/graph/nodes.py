@@ -2,8 +2,33 @@ from app.graph.base import BaseAgent
 from pydantic import BaseModel, Field
 from app.graph.state import NotesRequest, QueryRequest
 from app.db.client import SurrealDBClient
+from datetime import datetime
+from typing import Any
 
 import logging
+
+def _jsonable(obj: Any):
+    if obj is None:
+        return None
+    if isinstance(obj, (str, int, float, bool)):
+        return obj
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {str(k): _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_jsonable(v) for v in obj]
+
+    # SurrealDB RecordID (duck-typed)
+    if hasattr(obj, "table_name") and hasattr(obj, "record_id"):
+        return f"{getattr(obj, 'table_name')}:{getattr(obj, 'record_id')}"
+
+    # Pydantic models (v2)
+    if hasattr(obj, "model_dump"):
+        return _jsonable(obj.model_dump())
+
+    # Fallback
+    return str(obj)
 
 # Configure logging
 logging.basicConfig(
@@ -26,7 +51,6 @@ class ExtractedEntities(BaseModel):
         default_factory=list, description="List of extracted entities"
     )
 
-
 class ExtractedEdge(BaseModel):
     from_id: str = Field(description="Source node ID in format 'Type:Name'")
     rel_type: str = Field(description="Relationship type")
@@ -40,6 +64,20 @@ class ExtractedEdges(BaseModel):
         default_factory=list, description="List of extracted edges"
     )
 
+class SurrealQuery(BaseModel):
+    """Query for SurrealDB"""
+
+    surreal_query: str = Field(
+        default_factory=str, description="Surreal Database Query"
+    )
+
+class QueryAnswer(BaseModel):
+    """Answer to a query"""
+
+    answer: str = Field(
+        default_factory=str, description="Answer to the query"
+    )
+
 
 class NodeExtrator(BaseAgent):
 
@@ -47,13 +85,14 @@ class NodeExtrator(BaseAgent):
     prompt_name = "prompt_01"
 
     async def __call__(self, state: NotesRequest):
+        logger.info(f"Starting NodeExtrator")
         prompt_vars = {"transcripts": state.notes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
 
         llm = self.model.with_structured_output(ExtractedEntities)
         result = await llm.ainvoke(prompt)
         entities = result.entities if hasattr(result, "entities") else []
-        return {"extracted_entities": [e.model_dump() if hasattr(e, "model_dump") else e for e in entities]}
+        return {"nodes": [e.model_dump() if hasattr(e, "model_dump") else e for e in entities]}
 
 
 class EdgeExtractor(BaseAgent):
@@ -62,6 +101,7 @@ class EdgeExtractor(BaseAgent):
     prompt_name = "prompt_02"
 
     async def __call__(self, state: NotesRequest):
+        logger.info(f"Starting EdgeExtractor")
 
         prompt_vars = {"nodes": state.nodes}
         prompt = self.prompt_template.format_messages(**prompt_vars)
@@ -77,6 +117,7 @@ class GraphWriter:
         self.db = SurrealDBClient()
 
     async def __call__(self, state: NotesRequest):
+        logger.info(f"Starting GraphWriter")
 
         if self.db.db is None:
             await self.db.connect()
@@ -114,10 +155,61 @@ class GraphWriter:
         return {"status": "Nodes and edges recorded successfully"}
 
 
-class AgenticSearch(BaseModel):
+class AgenticSearch(BaseAgent):
     model_name = "gpt-4o-mini"
     prompt_name = "prompt_03"
 
     async def __call__(self, state: QueryRequest):
+        logger.info(f"Starting AgenticSearch")
+        prompt_vars = {"user_query": state.question}
+        prompt = self.prompt_template.format_messages(**prompt_vars)
 
-        pass
+        llm = self.model.with_structured_output(SurrealQuery)
+        result = await llm.ainvoke(prompt)
+            
+        return {"surreal_query": result.surreal_query}
+
+
+class SurrealQueryExecutor:
+    def __init__(self):
+        self.db = SurrealDBClient()
+
+    async def __call__(self, state: QueryRequest):
+
+        logger.info(f"Starting SurrealQueryExecutor")
+        if self.db.db is None:
+            await self.db.connect()
+
+        surql = state.surreal_query
+        if surql is None:
+            raise ValueError("Missing 'surreal_query' in state")
+        if not isinstance(surql, str):
+            surql = str(surql)
+        surql = surql.strip()
+        if not surql:
+            raise ValueError("Empty 'surreal_query' in state")
+
+        logger.info(f"Executing SurrealQL: {surql}")
+        result = await self.db.query(surql)
+            
+        return {"sub_graph": _jsonable(result)}
+
+
+class InferAnswer(BaseAgent):
+
+    model_name = "gpt-4o-mini"
+    prompt_name = "prompt_04"
+
+    async def __call__(self, state: QueryRequest):
+
+        logger.info(f"Starting InferAnswer")
+        prompt_vars = {
+            "retrieved_context": state.sub_graph,
+            "user_query": state.question
+        }
+        prompt = self.prompt_template.format_messages(**prompt_vars)
+
+        llm = self.model.with_structured_output(QueryAnswer)
+        result = await llm.ainvoke(prompt)
+
+        return {"response": result.answer}

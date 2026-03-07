@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.api.process_notes import router as process_nodes
+from app.api.query import router as query
 
 settings = get_settings()
 
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(process_nodes, tags=["process"])
+app.include_router(query, tags=["query"])
 
 
 @app.get("/health")

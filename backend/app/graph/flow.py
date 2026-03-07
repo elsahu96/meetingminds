@@ -19,7 +19,8 @@ from app.graph.nodes import (
     GraphWriter,
     NodeExtrator,
     AgenticSearch,
-    InferAnswer
+    InferAnswer,
+    SurrealQueryExecutor
 )
 
 
@@ -48,19 +49,32 @@ class ProcessNotes:
         return output
 
 class Query:
+
+    @traceable
     def __init__(self):
+        def route_start(state: QueryRequest):
+            if state.surreal_query:
+                return "surreal_query_executor"
+            if state.question:
+                return "agentic_search"
+            return END
+
         builder = StateGraph(QueryRequest)
         builder.add_node("agentic_search", AgenticSearch())
+        builder.add_node("surreal_query_executor", SurrealQueryExecutor())
         builder.add_node("answer_inferral", InferAnswer())
 
-        builder.add_edge(START, "agentic_search")
-        builder.add_edge("agentic_search", END)
-
-        # builder.add_edge("agentic_search", "answer_inferral")
-        # builder.add_edge("answer_inferral", END)
+        builder.add_conditional_edges(START, route_start)
+        builder.add_edge("agentic_search", "surreal_query_executor")
+        builder.add_edge("surreal_query_executor", "answer_inferral")
+        builder.add_edge("answer_inferral", END)
         self.graph = builder.compile()
 
+    @traceable
     async def __call__(self, request):
-        initial_state = {"query": request.query}
+        initial_state = {
+            "question": getattr(request, "question", None),
+            "surreal_query": getattr(request, "surreal_query", None),
+        }
         output = await self.graph.ainvoke(initial_state)
         return output

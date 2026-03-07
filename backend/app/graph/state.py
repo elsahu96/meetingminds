@@ -15,7 +15,7 @@ class NotesRequest(BaseModel):
     status: str = None
 
 class QueryRequest(BaseModel):
-    question: str
-    graph_information: list = None
+    question: str | None = None
+    surreal_query: str | None = None
+    sub_graph: list | dict = None
     response: str = None
-
