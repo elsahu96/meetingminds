@@ -159,6 +159,19 @@
     background: theme('colors.surface2');
     border: 1px solid theme('colors.border');
   }
+
+  /* Markdown rendered inside agent bubbles */
+  .prose-chat p { margin: 0 0 0.55em; }
+  .prose-chat p:last-child { margin-bottom: 0; }
+  .prose-chat strong { color: theme('colors.txt'); font-weight: 600; }
+  .prose-chat em { color: theme('colors.accent'); font-style: italic; }
+  .prose-chat ol, .prose-chat ul { margin: 0.4em 0 0.55em 1.2em; display: flex; flex-direction: column; gap: 0.25em; }
+  .prose-chat ol { list-style: decimal; }
+  .prose-chat ul { list-style: disc; }
+  .prose-chat li { color: theme('colors.txtMid'); }
+  .prose-chat li strong { color: theme('colors.txt'); }
+  .prose-chat code { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: rgba(255,255,255,.06); padding: 1px 5px; border-radius: 3px; color: theme('colors.accent'); }
+  .prose-chat h1, .prose-chat h2, .prose-chat h3 { font-weight: 600; color: theme('colors.txt'); margin: 0.6em 0 0.3em; }
   .cite-pill {
     @apply font-mono text-[9px] tracking-wide rounded-full px-2 py-0.5 cursor-pointer transition-all duration-150;
     color: theme('colors.indigo');
@@ -169,8 +182,6 @@
 
   .hl-pill {
     display: inline;
-    background: rgba(0, 229, 160, 0.1);
-    color: theme('colors.green');
     @apply rounded px-1 font-mono text-[11px];
   }
 

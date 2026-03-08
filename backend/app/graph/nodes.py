@@ -7,6 +7,7 @@ from typing import Any
 
 import logging
 
+
 def _jsonable(obj: Any):
     if obj is None:
         return None
@@ -30,10 +31,10 @@ def _jsonable(obj: Any):
     # Fallback
     return str(obj)
 
+
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class ExtractedEntities(BaseModel):
         default_factory=list, description="List of extracted entities"
     )
 
+
 class ExtractedEdge(BaseModel):
     from_id: str = Field(description="Source node ID in format 'Type:Name'")
     rel_type: str = Field(description="Relationship type")
@@ -64,6 +66,7 @@ class ExtractedEdges(BaseModel):
         default_factory=list, description="List of extracted edges"
     )
 
+
 class SurrealQuery(BaseModel):
     """Query for SurrealDB"""
 
@@ -71,12 +74,11 @@ class SurrealQuery(BaseModel):
         default_factory=str, description="Surreal Database Query"
     )
 
+
 class QueryAnswer(BaseModel):
     """Answer to a query"""
 
-    answer: str = Field(
-        default_factory=str, description="Answer to the query"
-    )
+    answer: str = Field(default_factory=str, description="Answer to the query")
 
 
 class NodeExtrator(BaseAgent):
@@ -92,7 +94,11 @@ class NodeExtrator(BaseAgent):
         llm = self.model.with_structured_output(ExtractedEntities)
         result = await llm.ainvoke(prompt)
         entities = result.entities if hasattr(result, "entities") else []
-        return {"nodes": [e.model_dump() if hasattr(e, "model_dump") else e for e in entities]}
+        return {
+            "nodes": [
+                e.model_dump() if hasattr(e, "model_dump") else e for e in entities
+            ]
+        }
 
 
 class EdgeExtractor(BaseAgent):
@@ -132,17 +138,17 @@ class GraphWriter:
             raise TypeError(f"Unsupported node/edge type: {type(obj)!r}")
 
         logger.info("Creating nodes")
-        for node in (state.nodes or []):
+        for node in state.nodes or []:
             node_data = _as_dict(node)
             logger.info(f"Processing node: {node_data}")
             record = await self.db.create_node(
                 table=node_data["type"].lower(),
                 record_id=node_data["name"].lower().replace(" ", "_").replace("-", ""),
-                data=node_data
+                data=node_data,
             )
             logger.info(f"Recorded node: {record}")
 
-        for edge in (state.edges or []):
+        for edge in state.edges or []:
             edge_data = _as_dict(edge)
             logger.info(f"Processing edge: {edge_data}")
             record = await self.db.create_edge(
@@ -166,7 +172,7 @@ class AgenticSearch(BaseAgent):
 
         llm = self.model.with_structured_output(SurrealQuery)
         result = await llm.ainvoke(prompt)
-            
+
         return {"surreal_query": result.surreal_query}
 
 
@@ -191,7 +197,7 @@ class SurrealQueryExecutor:
 
         logger.info(f"Executing SurrealQL: {surql}")
         result = await self.db.query(surql)
-            
+
         return {"sub_graph": _jsonable(result)}
 
 
@@ -205,7 +211,7 @@ class InferAnswer(BaseAgent):
         logger.info(f"Starting InferAnswer")
         prompt_vars = {
             "retrieved_context": state.sub_graph,
-            "user_query": state.question
+            "user_query": state.question,
         }
         prompt = self.prompt_template.format_messages(**prompt_vars)
 

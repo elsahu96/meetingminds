@@ -10,12 +10,12 @@ from pydantic import BaseModel
 
 class NotesRequest(BaseModel):
     notes: str
-    nodes: list = None
-    edges: list = None
-    status: str = None
+    nodes: list | None = None
+    edges: list | None = None
+    status: str | None = None
 
 class QueryRequest(BaseModel):
     question: str | None = None
     surreal_query: str | None = None
-    sub_graph: list | dict = None
-    response: str = None
+    sub_graph: list | dict | None = None
+    response: str | None = None

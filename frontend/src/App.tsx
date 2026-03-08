@@ -17,14 +17,12 @@ const nextFileId  = () => `t${fileIdCounter++}`
 
 export default function App() {
   const [tab,          setTab]          = useState<Tab>('ingest')
-  const [transcripts,  setTranscripts]  = useState<Transcript[]>(SEED_TRANSCRIPTS)
+  const [transcripts,  setTranscripts]  = useState<Transcript[]>([])
   const [graphNodes,   setGraphNodes]   = useState<GraphNode[]>([])
   const [graphEdges,   setGraphEdges]   = useState<GraphEdge[]>([])
   const [highlighted,  setHighlighted]  = useState<string | null>(null)
 
   const { processing, allDone, steps, showDelta, runProcessing } = useProcessing()
-
-  // Fetch graph data from API on component mount
 
 
   // Function to refresh graph data
@@ -122,7 +120,7 @@ export default function App() {
           )}
 
           {tab === 'query' && (
-            <ChatPanel onHighlight={highlightAndQuery} />
+            <ChatPanel onHighlight={highlightAndQuery} nodes={graphNodes} />
           )}
         </aside>
 

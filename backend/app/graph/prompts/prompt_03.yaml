@@ -34,6 +34,16 @@ messages:
       Chaining traversals (two hops):
         SELECT *, ->assigned_to->action->helps_to_achieve->topic.* AS topics FROM person;
 
+      ### SURREALDB FUNCTIONS (use ONLY these — standard SQL functions are invalid)
+
+      | Purpose                          | SurrealDB syntax          | INVALID (do NOT use)                          |
+      |----------------------------------|---------------------------|-----------------------------------------------|
+      | Check traversal has results      | `array::len(...) > 0`     | `NOT array::is_empty(...)`, `array_length(...)` |
+      | Array length                     | `array::len(...)`         | `array_length(...)`, `LEN(...)`               |
+
+      **NEVER use aggregate functions** (`count()`, `COUNT(*)`, `sum()`, etc.) in queries.
+      For "how many" questions, always retrieve the full records with `SELECT *` and let the answer agent count them.
+
       ### QUERY GENERATION RULES
 
       1. Always use SELECT to retrieve results.
@@ -43,23 +53,25 @@ messages:
       5. Use `AS` to give traversal results a descriptive alias that reflects what is being retrieved.
       6. Keep queries minimal — only traverse edges mentioned or implied by the query.
       7. If filtering on a specific name or value, use a WHERE clause.
-      8. **Always exclude records where the traversal result is empty** using `WHERE NOT array::is_empty(...)`. Use the raw traversal path (without `.*`) inside `array::is_empty` — this matches the pattern in the WHERE clause exactly.
-      9. When combining a name filter with an empty-list filter, join both conditions with AND.
+      8. **To exclude records where the traversal result is empty**, use `WHERE array::len(traversal_path) > 0`. Use the raw traversal path (without `.*`) inside `array::len`. NEVER use `NOT array::is_empty(...)` — it is invalid SurrealDB syntax.
+      9. When combining a name filter with a non-empty traversal filter, join both conditions with AND.
       10. Return only the raw SurrealDB query. No explanation, no markdown, no commentary.
+      11. **NEVER use aggregate functions** (`count()`, `COUNT(*)`, `sum()`, `GROUP ALL`, `GROUP BY`). Always use `SELECT *` — the answer agent will handle counting.
+      12. **NEVER use** `NOT array::is_empty(...)`, `array_length()`, `LEN()`, `LENGTH()`, or `COUNT(*)`.
 
       ### FEW-SHOT EXAMPLES
 
       User query: "Which actions are blocked by other actions?"
       SurrealDB query:
-      SELECT *, <-blocked_by<-action.* AS blocked_by_actions FROM action;
+      SELECT *, <-blocked_by<-action.* AS blocked_by_actions FROM action WHERE array::len(<-blocked_by<-action) > 0;
 
       User query: "Show all people with their assigned actions."
       SurrealDB query:
-      SELECT *, ->assigned_to->action.* AS assigned_actions FROM person
+      SELECT *, ->assigned_to->action.* AS assigned_actions FROM person WHERE array::len(->assigned_to->action) > 0;
 
       User query: "Which team does each person work for?"
       SurrealDB query:
-      SELECT *, ->work_for->team.* AS teams FROM person
+      SELECT *, ->work_for->team.* AS teams FROM person;
 
       User query: "What topics does each action help achieve?"
       SurrealDB query:
@@ -76,6 +88,14 @@ messages:
       User query: "Which topics are being progressed by actions assigned to people?"
       SurrealDB query:
       SELECT *, ->assigned_to->action->helps_to_achieve->topic.* AS achieved_topics FROM person;
+
+      User query: "How many actions are blocked by other actions?"
+      SurrealDB query:
+      SELECT * FROM action WHERE array::len(<-blocked_by<-action) > 0;
+
+      User query: "How many people are assigned to actions?"
+      SurrealDB query:
+      SELECT * FROM person WHERE array::len(->assigned_to->action) > 0;
   - role: human
     content: |
       Generate a SurrealDB query to answer the following question.
