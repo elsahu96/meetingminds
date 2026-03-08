@@ -32,15 +32,7 @@ export default function Topbar({ transcriptCount }: Props) {
 
       {/* Right side */}
       <div className="flex items-center gap-3 ml-auto">
-        <div className="risk-badge">
-          <span
-            className="animate-pulse inline-block"
-            style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red)' }}
-          />
-          <span className="font-mono" style={{ fontSize: 10 }}>
-            RISK: alice_chen · 4 open commitments
-          </span>
-        </div>
+        
         <button className="btn-top">EXPORT</button>
       </div>
     </header>
