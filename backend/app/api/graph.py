@@ -19,9 +19,15 @@ async def get_graph():
         node_tables = ["person", "action",  "topic", "team"]
         for table in node_tables:
             table_nodes = await client.get_nodes(table)
-            logger.info('table_nodes type', type(table_nodes))
-            logger.info('table_nodes', (table_nodes))
+            logger.info("table_nodes type: %s", type(table_nodes))
+
+            if not isinstance(table_nodes, list):
+                logger.warning("Unexpected nodes payload for %s: %r", table, table_nodes)
+                continue
+
             for n in table_nodes:
+                if not isinstance(n, dict):
+                    continue
                 node_type = table
                 if table == "person":
                     tooltip = {
@@ -76,11 +82,17 @@ async def get_graph():
         edge_types = ["assigned_to", "blocked_by", "helps_to_achieve", "reports_to", "work_for"]
         for rel_type in edge_types:
             table_edges = await client.get_edges(rel_type)
-            logger.info('table_edges type', type(table_edges))
-            logger.info('table_edges', (table_edges))
+            logger.info("table_edges type: %s", type(table_edges))
+
+            if not isinstance(table_edges, list):
+                logger.warning("Unexpected edges payload for %s: %r", rel_type, table_edges)
+                continue
+
             for e in table_edges:
-                logger.info("edge %s", e)
-                logger.info("edge in %s", e['in'])
+                if not isinstance(e, dict):
+                    continue
+                if "in" not in e or "out" not in e:
+                    continue
                 edges.append(GraphEdge(
                     source=str(e["in"]),
                     target=str(e["out"]),
