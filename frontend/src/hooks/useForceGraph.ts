@@ -11,13 +11,20 @@ export function useForceGraph(
   nodes: GraphNode[],
   edges: GraphEdge[],
   highlighted: string | null,
+  focusedNodeIds: string[] | null,
   onHighlight: (id: string | null) => void,
   onTooltip: (payload: { node: GraphNode; x: number; y: number } | null) => void,
 ) {
-  const simRef  = useRef<d3.Simulation<GraphNode, GraphEdge> | null>(null)
-  const liveRef = useRef<GraphNode[]>([])
-  const rafRef  = useRef<ReturnType<typeof setInterval> | null>(null)
+  const simRef   = useRef<d3.Simulation<GraphNode, GraphEdge> | null>(null)
+  const liveRef  = useRef<GraphNode[]>([])
+  const rafRef   = useRef<ReturnType<typeof setInterval> | null>(null)
+  const focusRef = useRef<Set<string> | null>(null)
   const [dims, setDims] = useState<Dims>({ w: 800, h: 600 })
+
+  // Keep focusRef in sync so the simulation tick can always read the latest focus set
+  useEffect(() => {
+    focusRef.current = focusedNodeIds ? new Set(focusedNodeIds) : null
+  }, [focusedNodeIds])
 
   // Observe container size
   useEffect(() => {
@@ -149,14 +156,16 @@ export function useForceGraph(
 
       // Update edges
       linkSel.each(function(d) {
-        const es = EDGE_STYLES[(d.type as string) as keyof typeof EDGE_STYLES] ?? EDGE_STYLES.committed
+        const es  = EDGE_STYLES[(d.type as string) as keyof typeof EDGE_STYLES] ?? EDGE_STYLES.committed
         const src = d.source as GraphNode
         const tgt = d.target as GraphNode
-        const ra = NODE_STYLES[src.type]?.r ?? 16
-        const rb = NODE_STYLES[tgt.type]?.r ?? 16
-        const dx = (tgt.x ?? 0) - (src.x ?? 0)
-        const dy = (tgt.y ?? 0) - (src.y ?? 0)
+        const ra  = NODE_STYLES[src.type]?.r ?? 16
+        const rb  = NODE_STYLES[tgt.type]?.r ?? 16
+        const dx  = (tgt.x ?? 0) - (src.x ?? 0)
+        const dy  = (tgt.y ?? 0) - (src.y ?? 0)
         const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const fs   = focusRef.current
+        const edgeOpacity = !fs || (fs.has(src.id) && fs.has(tgt.id)) ? 0.9 : 0.06
         const s = d3.select(this)
           .attr('x1', (src.x ?? 0) + (dx / dist) * ra)
           .attr('y1', (src.y ?? 0) + (dy / dist) * ra)
@@ -164,7 +173,7 @@ export function useForceGraph(
           .attr('y2', (tgt.y ?? 0) - (dy / dist) * (rb + 7))
           .attr('stroke', es.stroke)
           .attr('stroke-width', es.width)
-          .attr('opacity', 0.9)
+          .attr('opacity', edgeOpacity)
           .attr('marker-end', `url(#${es.markerId})`)
         if (es.dash) s.attr('stroke-dasharray', es.dash)
         else s.attr('stroke-dasharray', null)
@@ -239,24 +248,38 @@ export function useForceGraph(
     }
   }, [nodes, edges, dims])
 
-  // Re-style only (no simulation restart) when highlighted changes
+  // Re-style only (no simulation restart) when highlighted or focusedNodeIds changes
   useEffect(() => {
     const svg = svgRef.current
     if (!svg) return
+    const focusSet = focusedNodeIds ? new Set(focusedNodeIds) : null
+
     d3.select(svg).select('.node-layer')
       .selectAll<SVGGElement, GraphNode>('g.node')
       .each(function(d) {
-        const g  = d3.select(this)
-        const ns = NODE_STYLES[d.type] ?? NODE_STYLES.action
-        const isHl = d.id === highlighted
-        const r  = isHl ? ns.r + 4 : ns.r
-        const isOd = !!d.overdue
-        const stroke = isOd ? '#ff4d6a' : ns.stroke
+        const g       = d3.select(this)
+        const ns      = NODE_STYLES[d.type] ?? NODE_STYLES.action
+        const isHl    = d.id === highlighted
+        const isOd    = !!d.overdue
+        const inFocus = !focusSet || focusSet.has(d.id)
+        const r       = isHl ? ns.r + 4 : ns.r
+        const stroke  = isOd ? '#ff4d6a' : ns.stroke
+
+        g.attr('opacity', inFocus ? 1 : 0.12)
         g.select('.hl-ring').style('display', isHl ? '' : 'none').attr('r', r + 9)
         g.select('.main-circle').attr('r', r).attr('stroke-width', isHl ? 2.8 : 1.8)
           .attr('stroke', stroke).attr('filter', isHl ? 'url(#gfhl)' : 'url(#gf)')
       })
-  }, [highlighted, svgRef])
+
+    d3.select(svg).select('.edge-layer')
+      .selectAll<SVGLineElement, GraphEdge>('line')
+      .attr('opacity', function(d) {
+        if (!focusSet) return 0.9
+        const src = typeof d.source === 'string' ? d.source : (d.source as GraphNode).id
+        const tgt = typeof d.target === 'string' ? d.target : (d.target as GraphNode).id
+        return focusSet.has(src) && focusSet.has(tgt) ? 0.9 : 0.06
+      })
+  }, [highlighted, focusedNodeIds, svgRef])
 
   return { dims }
 }

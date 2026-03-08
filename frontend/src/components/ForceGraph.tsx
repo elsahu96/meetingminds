@@ -6,6 +6,7 @@ interface Props {
   nodes: GraphNode[]
   edges: GraphEdge[]
   highlighted: string | null
+  focusedNodeIds: string[] | null
   onHighlight: (id: string | null) => void
 }
 
@@ -15,13 +16,13 @@ interface TooltipState {
   y: number
 }
 
-export default function ForceGraph({ nodes, edges, highlighted, onHighlight }: Props) {
+export default function ForceGraph({ nodes, edges, highlighted, focusedNodeIds, onHighlight }: Props) {
   const svgRef       = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
 
   const { dims } = useForceGraph(
-    svgRef, containerRef, nodes, edges, highlighted, onHighlight,
+    svgRef, containerRef, nodes, edges, highlighted, focusedNodeIds, onHighlight,
     (payload) => setTooltip(payload as TooltipState | null),
   )
 

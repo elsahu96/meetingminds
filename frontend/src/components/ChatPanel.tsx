@@ -10,8 +10,7 @@ marked.setOptions({ breaks: true })
 /** Wrap known entity labels in hl-pill spans before markdown processing. */
 function highlightEntities(text: string, nodes: GraphNode[]): string {
   if (!nodes.length) return text
-  console.log('text:', text)
-  console.log('nodes:', nodes)
+
   // Build label → node map; longest labels first so "Alice Chen" matches before "Alice"
   const labelToNode = new Map<string, GraphNode>()
   for (const node of nodes) {
@@ -29,7 +28,7 @@ function highlightEntities(text: string, nodes: GraphNode[]): string {
     // Avoid replacing inside existing HTML tags or already-wrapped spans
     result = result.replace(
       new RegExp(`(?<!class="[^"]*|<[^>]*)\\b${escaped}\\b`, 'gi'),
-      `<span class="hl-pill" style="color:${color};background:${bg}">${label}</span>`,
+      `<span class="hl-pill" data-node-id="${node.id}" style="color:${color};background:${bg}">${label}</span>`,
     )
   }
   return result
@@ -46,10 +45,11 @@ const nextId = () => `msg-${msgIdCounter++}`
 
 interface Props {
   onHighlight: (nodeId: string) => void
+  onFocusNodes?: (ids: string[]) => void
   nodes?: GraphNode[]
 }
 
-export default function ChatPanel({ onHighlight, nodes = [] }: Props) {
+export default function ChatPanel({ onHighlight, onFocusNodes, nodes = [] }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>(SEED_CHAT)
   const [input, setInput]       = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -85,6 +85,16 @@ export default function ChatPanel({ onHighlight, nodes = [] }: Props) {
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, agentMsg])
+
+      // Focus graph on entities mentioned in the answer
+      if (onFocusNodes && nodes.length) {
+        const matched = nodes
+          .filter(n => n.label && n.label.length > 1 &&
+            new RegExp(`\\b${n.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(res.answer)
+          )
+          .map(n => n.id)
+        onFocusNodes(matched)
+      }
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } }; message?: string })
         ?.response?.data?.detail ?? (err as { message?: string })?.message ?? 'Unknown error'
@@ -114,6 +124,10 @@ export default function ChatPanel({ onHighlight, nodes = [] }: Props) {
               className={`rounded ${m.role === 'user' ? 'bubble-user' : 'bubble-agent'} ${m.role === 'agent' ? 'prose-chat' : ''}`}
               style={{ maxWidth: '88%', padding: '10px 14px', lineHeight: 1.65, fontSize: 13 }}
               dangerouslySetInnerHTML={{ __html: m.role === 'agent' ? renderAgentText(m.text, nodes) : m.text }}
+              onClick={e => {
+                const nodeId = (e.target as HTMLElement).getAttribute('data-node-id')
+                if (nodeId) onHighlight(nodeId)
+              }}
             />
 
             {m.citations && m.citations.length > 0 && (

@@ -182,6 +182,7 @@
 
   .hl-pill {
     display: inline;
+    cursor: pointer;
     @apply rounded px-1 font-mono text-[11px];
   }
 

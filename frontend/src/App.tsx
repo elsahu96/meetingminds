@@ -20,17 +20,20 @@ export default function App() {
   const [transcripts,  setTranscripts]  = useState<Transcript[]>([])
   const [graphNodes,   setGraphNodes]   = useState<GraphNode[]>([])
   const [graphEdges,   setGraphEdges]   = useState<GraphEdge[]>([])
-  const [highlighted,  setHighlighted]  = useState<string | null>(null)
+  const [highlighted,    setHighlighted]    = useState<string | null>(null)
+  const [focusedNodeIds, setFocusedNodeIds] = useState<string[] | null>(null)
 
   const { processing, allDone, steps, showDelta, runProcessing } = useProcessing()
 
 
-  // Function to refresh graph data
+  // Function to refresh graph data — also clears any query focus
   const refreshGraph = useCallback(async () => {
     try {
       const graphData = await apiClient.getGraph()
       setGraphNodes(graphData.nodes || [])
       setGraphEdges(graphData.edges || [])
+      setFocusedNodeIds(null)
+      setHighlighted(null)
     } catch (error) {
       console.error('Failed to refresh graph data:', error)
     }
@@ -120,7 +123,11 @@ export default function App() {
           )}
 
           {tab === 'query' && (
-            <ChatPanel onHighlight={highlightAndQuery} nodes={graphNodes} />
+            <ChatPanel
+              onHighlight={highlightAndQuery}
+              onFocusNodes={setFocusedNodeIds}
+              nodes={graphNodes}
+            />
           )}
         </aside>
 
@@ -139,6 +146,7 @@ export default function App() {
             nodes={graphNodes}
             edges={graphEdges}
             highlighted={highlighted}
+            focusedNodeIds={focusedNodeIds}
             onHighlight={handleHighlight}
           />
         </div>
