@@ -1,22 +1,29 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import os
 
 
 class Settings(BaseSettings):
-    # Anthropic
-    anthropic_api_key: str = ""
+
+    # OpenAI
+    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
 
     # SurrealDB
-    surrealdb_url: str = "ws://localhost:8000/rpc"
-    surrealdb_namespace: str = "meetingmind"
-    surrealdb_database: str = "main"
-    surrealdb_user: str = "root"
-    surrealdb_pass: str = "root"
-
+    surrealdb_url: str = os.getenv(
+        "SURREALDB_URL",
+        "wss://brave-galaxy-06ebtcqtnhtov5ucd6f1tflbls.aws-euw1.surreal.cloud/rpc",
+    )
+    surrealdb_namespace: str = os.getenv("SURREALDB_NAMESPACE", "main")
+    surrealdb_database: str = os.getenv("SURREALDB_DATABASE", "main")
+    surrealdb_user: str = os.getenv("SURREALDB_USER", "admin")
+    surrealdb_pass: str = os.getenv("SURREALDB_PASS", "admin")
     # LangSmith
-    langchain_tracing_v2: bool = False
-    langchain_api_key: str = ""
-    langchain_project: str = "meetingmind"
+    langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "true")
+    langsmith_api_key: str = os.getenv("LANGSMITH_API_KEY", "")
+    langsmith_project: str = os.getenv("LANGSMITH_PROJECT", "MeetingMinds")
+    langsmith_endpoint: str = os.getenv(
+        "LANGSMITH_ENDPOINT", "https://api.smith.langchain.com"
+    )
 
     # App
     env: str = "development"

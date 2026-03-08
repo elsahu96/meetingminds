@@ -1,32 +1,95 @@
-"""
-GET /graph                       → full knowledge graph for rendering
-GET /commitments/overdue         → overdue action items
-GET /risk/single-point-of-failure → people with highest accountability risk
-
-TODO: wire up SurrealDB queries from app/db/queries.py
-"""
 from fastapi import APIRouter
-from app.core.schemas import GraphDataResponse, AtRiskItem, OverdueItem
+from app.db.client import SurrealDBClient
+from app.core.schemas import GraphDataResponse, GraphNode, GraphEdge
+import logging
 
 router = APIRouter()
-
+logger = logging.getLogger(__name__)
 
 @router.get("/graph", response_model=GraphDataResponse)
-async def get_graph() -> GraphDataResponse:
-    # TODO: fetch from SurrealDB
-    # from app.db.client import get_client
-    # client = await get_client()
-    # return await client.get_full_graph()
-    raise NotImplementedError("Graph endpoint not yet implemented")
+async def get_graph():
+    try:
+        client = SurrealDBClient()
+        await client.connect()
 
+        nodes = []
+        edges = []
 
-@router.get("/commitments/overdue", response_model=list[OverdueItem])
-async def get_overdue() -> list[OverdueItem]:
-    # TODO: run QUERY_OVERDUE_COMMITMENTS against SurrealDB
-    raise NotImplementedError("Overdue endpoint not yet implemented")
+        # Get all nodes from different tables
+        node_tables = ["person", "action",  "topic", "team"]
+        for table in node_tables:
+            table_nodes = await client.get_nodes(table)
+            logger.info('table_nodes type', type(table_nodes))
+            logger.info('table_nodes', (table_nodes))
+            for n in table_nodes:
+                node_type = table
+                if table == "person":
+                    tooltip = {
+                        "type": "Person",
+                        "name": n.get("name", ""),
+                        "role": n.get("role", ""),
+                        "commits": "",  # TODO
+                        "risk": ""  # TODO
+                    }
+                elif table == "action":
+                    tooltip = {
+                        "type": "Action",
+                        "name": n.get("name", n.get("description", "")),
+                        "role": "",
+                        "commits": "",
+                        "risk": ""
+                    }
+                elif table == "topic":
+                    tooltip = {
+                        "type": "Topic",
+                        "name": n.get("name", n.get("description", "")),
+                        "role": "",
+                        "commits": "",
+                        "risk": ""
+                    }
+                elif table == "team":
+                    tooltip = {
+                        "type": "Team",
+                        "name": n.get("name", n.get("description", "")),
+                        "role": "",
+                        "commits": "",
+                        "risk": ""
+                    }
+                else:
+                    tooltip = {
+                        "type": table.capitalize(),
+                        "name": n.get("name", n.get("description", "")),
+                        "role": "",
+                        "commits": "",
+                        "risk": ""
+                    }
+                
+                nodes.append(GraphNode(
+                    id=str(n["id"]),
+                    type=node_type,
+                    label=n.get("name", n.get("title", n.get("description", ""))),
+                    overdue=n.get("status") == "pending" and n.get("deadline", "") < "now()" if table == "action" else False,
+                    tooltip=tooltip
+                ))
 
+        # Get all edges from different relations
+        edge_types = ["assigned_to", "blocked_by", "helps_to_achieve", "reports_to", "work_for"]
+        for rel_type in edge_types:
+            table_edges = await client.get_edges(rel_type)
+            logger.info('table_edges type', type(table_edges))
+            logger.info('table_edges', (table_edges))
+            for e in table_edges:
+                logger.info("edge %s", e)
+                logger.info("edge in %s", e['in'])
+                edges.append(GraphEdge(
+                    source=str(e["in"]),
+                    target=str(e["out"]),
+                    type=rel_type
+                ))
 
-@router.get("/risk/single-point-of-failure", response_model=list[AtRiskItem])
-async def get_risk() -> list[AtRiskItem]:
-    # TODO: run QUERY_SINGLE_POINT_OF_FAILURE against SurrealDB
-    raise NotImplementedError("Risk endpoint not yet implemented")
+        return GraphDataResponse(nodes=nodes, edges=edges)
+
+    except Exception as e:
+        logger.exception("Failed to get graph: %s", e)
+        raise
+

@@ -1,0 +1,30 @@
+Meeting 2 — Product Roadmap Review
+Date & Time: Tuesday, February 4, 2026 | 2:00 PM
+Attendees: Clara Whitfield (Product Manager), Daniel Osei (Product Designer), Rosa Kim (Data Analyst), Tom Baxter (Engineering Manager)
+Transcript
+
+
+Clara Whitfield: Thanks for joining. I want to make the most of this time — the all-hands is Friday and I need to walk in with a clear picture of Q2. Let's start with the customer portal redesign since that's our flagship initiative for the quarter.
+Daniel Osei: I can give you the full picture. Wireframes for the dashboard and the account settings pages are complete. I actually presented them to the leadership team last week and got broadly positive feedback — the main note was to increase the information density on the dashboard. I'm currently working on the notification preferences panel, which is the most complex part of the redesign because it has a lot of conditional logic depending on user tier.
+Clara Whitfield: Great. What's the timeline for finishing the notification panel?
+Daniel Osei: That's where I have a problem. I'm blocked. I need updated brand guidelines from Marketing before I can finalise the colour system across the portal. Right now I'm working with the old palette from 2024, and I know Marketing did a brand refresh in January. If I design the notification panel in the old palette and they hand me new guidelines after, I'll have to redo everything. I've chased them twice last week — sent a Slack and an email — and heard nothing back.
+Clara Whitfield: That's frustrating. Do you know who specifically owns the brand guidelines handoff in Marketing?
+Daniel Osei: Sophia Grant's team, I believe. But I'm not sure who the right person is at the working level.
+Clara Whitfield: I'll reach out to Sophia directly today. We can't have design blocked on something like that. Rosa, let's talk data. What does usage look like currently and what should it inform about the redesign?
+Rosa Kim: A few things worth highlighting. First, mobile — sixty-three percent of portal sessions are mobile, which is up from fifty-one percent a year ago. That's a significant shift and it has to be the primary lens for the redesign. Any interface that isn't optimised for mobile first is going to frustrate the majority of our users. Second, the features with the highest engagement are account management and billing — not the dashboard. Users are coming in to do tasks, not to consume information. That suggests the dashboard-first approach might not be the right hierarchy.
+Daniel Osei: That's really interesting. It might actually justify a rethink of the navigation structure. If users are going straight to account management, maybe that should be the entry point rather than the dashboard.
+Clara Whitfield: I agree that's worth exploring. Rosa, is there anything else from the data that should shape our priorities?
+Rosa Kim: Yes — churn signals. I've been running a separate analysis on the customer segmentation model and there's a clear pattern: customers who don't engage with the portal in their first thirty days have a significantly higher churn rate at the six-month mark. That points to onboarding being a high-leverage area. If we redesign the portal but the first-time user experience is still confusing, we'll miss the biggest opportunity.
+Tom Baxter: That's consistent with what we're hearing from Customer Success. They've had a spike in support tickets about onboarding confusion this week. I was going to raise it separately but it's relevant here.
+Clara Whitfield: Tom, before we go further — you mentioned the notification service when we spoke briefly before this meeting. Can you elaborate on what your team is doing?
+Tom Baxter: Sure. Two of my engineers — Priya Nair and someone else on the backend team — started scoping a notification service about three weeks ago. It came out of a customer escalation where a large account complained that our in-app notifications were unreliable. They picked it up proactively rather than waiting for it to be formally scheduled.
+Clara Whitfield: The notification service is on our Q3 roadmap. We haven't kicked it off yet precisely because we want to get the portal redesign stable first. Are they building the same thing that's on the roadmap?
+Tom Baxter: Honestly, I'm not certain. I haven't fully reviewed their architecture doc. It's possible they're building something narrower — a fix for the existing notification behaviour rather than a full new service. But I can't confirm that without looking at it.
+Rosa Kim: That's a real risk. If they build a narrow fix now and we then try to build the full notification service in Q3, we'll have to either integrate with or replace what they built. That could cost more time than just doing it right once.
+Daniel Osei: And from a design standpoint, if Engineering is already building the notification preferences backend, I should be designing the UI in parallel — not as an afterthought once the backend is done. That's how we end up with UIs that don't match what the backend can actually support.
+Clara Whitfield: Agreed. Tom, I need you to pull together a clear summary of what your team has built or scoped so far. Can you have that to me by Thursday? I want to decide before Friday's all-hands whether to accelerate the notification service into Q2 or formally pause the grassroots work until Q3.
+Tom Baxter: I can do that. I'll also pull Priya into a call tomorrow to get her read on the scope.
+Clara Whitfield: Good. On the portal: let's formally adopt a mobile-first approach and Rosa, I'd like you to frame the data findings as a design brief we can share with Daniel. Can you have that by Wednesday?
+Rosa Kim: Yes, I'll put it together. Should I include the churn correlation data or keep it high-level?
+Clara Whitfield: Include the full analysis. Daniel needs to be able to justify decisions to leadership with data, not just instinct.
+Daniel Osei: That would be really helpful. The more specific the data, the stronger the design rationale.

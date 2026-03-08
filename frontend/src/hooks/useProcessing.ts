@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import type { Transcript, ExtractStep, GraphNode, GraphEdge } from '@/types'
 import { PROCESS_STEPS } from '@/lib/seedData'
+import { apiClient } from '@/lib/api'
 
 let stepIdCounter = 0
 const nextId = () => `step-${stepIdCounter++}`
@@ -19,10 +20,9 @@ interface UseProcessingReturn {
 
 export function useProcessing(): UseProcessingReturn {
   const [processing, setProcessing] = useState(false)
-  const [allDone, setAllDone] = useState(false)
-  const [steps, setSteps] = useState<ExtractStep[]>([])
-  const [showDelta, setShowDelta] = useState(false)
-  const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [allDone,    setAllDone]    = useState(false)
+  const [steps,      setSteps]      = useState<ExtractStep[]>([])
+  const [showDelta,  setShowDelta]  = useState(false)
 
   const runProcessing = useCallback((
     transcripts: Transcript[],
@@ -31,59 +31,81 @@ export function useProcessing(): UseProcessingReturn {
   ) => {
     if (processing) return
 
+    const toProcess = transcripts.filter(t => t.status !== 'done')
+    if (!toProcess.length) return
+
     setProcessing(true)
+    setAllDone(false)
     setSteps([])
 
-    // Mark pending transcripts as processing
-    setTranscripts(prev =>
-      prev.map(t => t.status !== 'done' ? { ...t, status: 'processing' as const } : t)
-    )
+    // First file → processing, all others → queued
+    setTranscripts(prev => prev.map(t => {
+      if (t.status === 'done') return t
+      return t.id === toProcess[0].id
+        ? { ...t, status: 'processing' as const, progress: 0 }
+        : { ...t, status: 'queued' as const, progress: 0 }
+    }))
 
-    // Animate progress bars
-    let prog = 0
-    tickerRef.current = setInterval(() => {
-      prog = Math.min(prog + Math.random() * 11, 93)
-      setTranscripts(prev =>
-        prev.map(t => t.status === 'processing' ? { ...t, progress: Math.round(prog) } : t)
-      )
-    }, 280)
-
-    // Stream extraction steps
+    // Stream UI extraction steps while requests are in flight
     PROCESS_STEPS.forEach((s, i) => {
-      setTimeout(() => {
-        setSteps(prev => [...prev, { ...s, id: nextId() }])
-      }, 200 + i * 420)
+      setTimeout(() => setSteps(prev => [...prev, { ...s, id: nextId() }]), 200 + i * 420)
     })
 
-    const totalMs = 200 + PROCESS_STEPS.length * 420 + 300
-    setTimeout(() => {
-      if (tickerRef.current) clearInterval(tickerRef.current)
+    const processSequentially = async (queue: Transcript[]) => {
+      for (let i = 0; i < queue.length; i++) {
+        const current = queue[i]
 
-      setTranscripts(prev =>
-        prev.map(t => ({ ...t, status: 'done' as const, progress: 100 }))
-      )
+        // Animate progress bar only for the current file
+        let prog = 0
+        const ticker = setInterval(() => {
+          prog = Math.min(prog + Math.random() * 11, 93)
+          setTranscripts(prev =>
+            prev.map(t => t.id === current.id ? { ...t, progress: Math.round(prog) } : t)
+          )
+        }, 280)
+
+        try {
+          await apiClient.processNotes({ notes: current.text, nodes: [], edges: [], status: '' })
+          clearInterval(ticker)
+
+          // Mark current done; advance next to processing
+          setTranscripts(prev => prev.map(t => {
+            if (t.id === current.id)         return { ...t, status: 'done'       as const, progress: 100 }
+            if (t.id === queue[i + 1]?.id)   return { ...t, status: 'processing' as const, progress: 0   }
+            return t
+          }))
+        } catch (err: unknown) {
+          clearInterval(ticker)
+          setTranscripts(prev =>
+            prev.map(t => t.id === current.id ? { ...t, status: 'ready' as const, progress: 0 } : t)
+          )
+          setProcessing(false)
+          setSteps(prev => [...prev, {
+            id:   nextId(),
+            cls:  'warn' as const,
+            icon: '⚠',
+            text: `Process failed · ${
+              (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+              ?? (err as { message?: string })?.message
+              ?? 'Unknown error'
+            }`,
+          }])
+          return
+        }
+      }
+
+      // All files done — refresh graph
+      try {
+        const graphData = await apiClient.getGraph()
+        onNewNodes(graphData.nodes ?? [], graphData.edges ?? [])
+      } catch { /* graph refresh failure is non-fatal */ }
+
       setProcessing(false)
       setAllDone(true)
       setShowDelta(true)
+    }
 
-      // Add a new node to the graph to demonstrate live update
-      onNewNodes(
-        [{
-          id: 'a21',
-          type: 'action',
-          label: 'payments+1day',
-          overdue: true,
-          tooltip: {
-            type: 'ACTION',
-            name: 'Payments (+1 day)',
-            role: 'Alice · Mar 13',
-            commits: 'pending',
-            risk: 'medium',
-          },
-        }],
-        [{ source: 'alice', target: 'a21', type: 'committed' }],
-      )
-    }, totalMs)
+    processSequentially(toProcess)
   }, [processing])
 
   return { processing, allDone, steps, showDelta, runProcessing }

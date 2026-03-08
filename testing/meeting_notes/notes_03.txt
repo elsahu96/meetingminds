@@ -1,0 +1,32 @@
+Meeting 3 — Data Infrastructure Weekly
+Date & Time: Wednesday, February 5, 2026 | 9:30 AM
+Attendees: Aisha Patel (Data Engineering Lead), Marcus Flynn (Data Engineer), Nina Johansson (ML Engineer), Greg Thorn (Platform Ops)
+Transcript
+
+
+Aisha Patel: Good morning everyone. Let's go through updates systematically. I want to finish with a discussion about capacity for the next two weeks because I'm nervous we're overcommitted. Marcus, pipeline migration first.
+Marcus Flynn: Right. I've migrated eight of the twelve source pipelines to the new warehouse. The work has gone well — the new schema is cleaner, query performance is noticeably better on the migrated pipelines, and we haven't had any data loss events. The remaining four are all blocked by the same thing: the legacy CRM connector. It's still on the old schema. Three of those four pipelines are core business data — revenue, subscription events, and customer lifecycle. Until the CRM team updates the API, I genuinely cannot proceed.
+Aisha Patel: I've chased the CRM team twice. What's their current ETA?
+Marcus Flynn: They told me end of February. But they said the same thing at the start of January, so I have limited confidence. I've asked if I can get read access to their development environment so I can at least build and test the new connector in advance, but that request is sitting unanswered.
+Aisha Patel: I'll escalate the dev environment access today. If you can build the connector ahead of their API update, we can reduce the integration time significantly when they do release. What does the connector work involve exactly?
+Marcus Flynn: Mostly schema mapping — the new CRM API returns a significantly different JSON structure. I need to write transformation logic to flatten it into our warehouse tables. Probably three or four days of work once I have something to test against.
+Nina Johansson: I need to raise something that connects to this. I've been working on the feature store for the recommendation engine. The feature store needs historical CRM event data — customer interactions, product usage history, that sort of thing — to generate meaningful training features. I assumed the migrated pipeline would give me what I need, but now I understand the CRM connector is blocked, which means the historical data I need might not be available either.
+Marcus Flynn: Yeah, that's right. The customer lifecycle events are one of the four blocked pipelines. You'd be waiting on the same CRM connector fix as me.
+Nina Johansson: So we have a dependency collision. That's not great — the growth team is expecting a working recommendation engine by Q2 and the feature store is foundational to that.
+Aisha Patel: Hold on — Nina, when did the feature store work start? I don't think this was on our roadmap.
+Nina Johansson: I started about three weeks ago. Lena Kovacs from Growth pulled me into a call and made the case for Q2 personalised recommendations. Given the ML lead time required to build a quality feature store, I knew I had to start immediately if we were going to hit that date. I should have flagged it formally — that's on me.
+Aisha Patel: It's not a criticism — I understand why you moved fast. But I need it tracked. If it's not in our sprint board, it's invisible and I can't manage capacity or dependencies.
+Greg Thorn: I can potentially help with the CRM data problem. I set up a read-only replica of the legacy CRM database a few months ago for incident postmortem work. It has the historical event data, though it's not real-time — it's refreshed nightly. It might be a bridge that gets Nina unblocked for feature development even while the live connector is stuck.
+Nina Johansson: That could be exactly what I need for the training pipeline. Real-time data matters less for historical feature generation than for the eventual inference pipeline. Greg, can we test the connection today?
+Greg Thorn: I'll share the credentials with you and Marcus after this call. Fair warning — it runs on a pretty old instance, so some of the date fields are in non-standard formats. You'll need to write some normalisation logic.
+Marcus Flynn: Good to know. I can document the field format issues for both of us so we're not duplicating that detective work.
+Aisha Patel: Good. One more thing — Nina, separately from the CRM question, I want to understand the full scope of the feature store. What's the intended architecture?
+Nina Johansson: The core is a materialised feature table updated in batch every six hours. Features include user-level behavioural signals, product affinity scores, recency and frequency metrics, and some derived features from engagement patterns. The serving layer will be a simple REST API that the recommendation engine queries at inference time. I've sketched the schema but haven't started the compute layer yet.
+Aisha Patel: And this lives in our existing warehouse or somewhere else?
+Nina Johansson: That's actually an open question. The features need to be low-latency at serving time, which argues for a separate feature store infrastructure — something like Redis or a dedicated feature platform. The warehouse isn't fast enough for real-time inference.
+Greg Thorn: That's a meaningful infrastructure decision. A new serving layer means new infrastructure costs, new monitoring, new failure modes. That needs to go through a proper architecture review before we build it.
+Aisha Patel: Agreed. Nina, let's schedule an architecture review for next week. Don't build the serving layer until we've reviewed it as a team.
+Nina Johansson: Fair. I'll prepare the architecture proposal by Friday so people have time to read it over the weekend.
+Aisha Patel: Good. Anything else before we talk capacity?
+Marcus Flynn: One small thing — the data quality monitoring we set up last sprint has been producing false positive alerts on the revenue pipeline. I've been spending about an hour a day triaging them. It's not a blocker but it's noise that's slowing me down.
+Greg Thorn: I can adjust the alerting thresholds. Send me the alert IDs and I'll tune them.

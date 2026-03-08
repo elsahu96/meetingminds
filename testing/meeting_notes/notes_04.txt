@@ -1,0 +1,27 @@
+Meeting 4 — Marketing Campaign Kickoff
+Date & Time: Wednesday, February 5, 2026 | 1:00 PM
+Attendees: Sophia Grant (Marketing Director), Leo Marsh (Content Lead), Fatima Hussain (Paid Media Manager), Owen Bradley (Analytics)
+Transcript
+
+
+Sophia Grant: Welcome everyone. This is the formal kickoff for our Q2 brand awareness campaign. I know we've been talking about it informally for weeks, but this is where we get specific — timelines, owners, dependencies, and blockers. Let's not leave this room without a clear plan. Leo, you're up first. Walk us through the content plan.
+Leo Marsh: Happy to. The core of the campaign is a six-part thought leadership series. The theme is 'The Future of Customer Experience' — broad enough to generate organic search interest, specific enough to position us credibly against competitors. The format is long-form articles, roughly two thousand words each, published every two weeks starting March third. I've drafted articles one and two, and I'm deep into article three. The quality is good — I had one reviewed externally and the feedback was strong.
+Sophia Grant: What's the distribution plan beyond the blog?
+Leo Marsh: LinkedIn for all six. A curated newsletter to our subscriber list of twenty-two thousand. We'll pitch articles two and four to two industry publications. And Fatima's team will amplify with paid promotion.
+Fatima Hussain: That's right — I've already planned the paid amplification budget. Each article gets a two-week promoted post window on LinkedIn.
+Leo Marsh: The problem is that I'm blocked on Legal review. Article two includes a head-to-head comparison with two competitors — feature claims, pricing claims, that sort of thing. Legal has to sign off on that language before I can publish. I submitted it ten days ago and I still have no response. That's a real problem because March third is less than four weeks away.
+Sophia Grant: Ten days is too long. What's the status — is it sitting in a queue, or is someone actively reviewing it?
+Leo Marsh: I genuinely don't know. I submitted through the standard Legal portal and got an auto-confirmation, but nothing since.
+Fatima Hussain: I'm in the same boat. The ad copy for the LinkedIn creative — four different variants — has been sitting in Legal review for a week. I can't go to the ad studio to produce creatives until copy is approved. So the entire paid channel is blocked right now.
+Sophia Grant: Both of you, blocked by the same team. That's a real problem. I'll contact Nadia Obi this afternoon — she's the General Counsel — and escalate both submissions together. I'll ask for a target turnaround of forty-eight hours. If we don't get it, I'll escalate further.
+Owen Bradley: While we're on timelines — I need to flag that campaign tracking setup takes about a week if we want it done properly. UTM structures, pixel configuration, dashboard builds in our BI tool. I can start the framework now, but I need confirmed URLs and final copy to finish the tagging. If Legal review slips by another two weeks, we'll be scrambling to get tracking live before launch.
+Sophia Grant: Owen, let's have you build the tracking architecture in parallel — use placeholder URLs for now. The structure won't change even if the URLs do.
+Owen Bradley: I can do that. I'll have the UTM taxonomy and placeholder dashboard ready by Friday.
+Fatima Hussain: There's something else I want to flag — potentially significant. Last week I was in an all-hands recap and I saw a slide referencing a 'notification features launch campaign' for Q2. I don't know who owns it, but if it's targeting the same audience segments we are — which seems likely given it's a product campaign — we could be running competing paid campaigns in the same channels at the same time. That would drive up our CPMs and muddle the message.
+Owen Bradley: That's a real concern. LinkedIn auction dynamics mean competing internal campaigns bid against each other and inflate costs for both. I've seen it happen.
+Sophia Grant: Do you have any more context on which team owns it, Fatima?
+Fatima Hussain: Not really. The slide was brief and didn't list an owner. It might be a Growth initiative or a Product launch thing. But if they're running paid, someone in this building has a budget approved for it.
+Leo Marsh: It would also affect editorial. If there's another content push happening simultaneously around notifications, our thought leadership on customer experience might get visually or editorially confused with a product-specific campaign. We'd want to at least coordinate the messaging hierarchy.
+Sophia Grant: I'll track it down. I'll ask in the marketing Slack channel today and if that doesn't surface the owner, I'll go to leadership directly. We can't have uncoordinated campaigns in market at the same time.
+Owen Bradley: One more thing — I want to raise the attribution model for this campaign. Brand awareness is inherently difficult to attribute to revenue. If we're asked to justify campaign ROI at the end of Q2, we need to agree now on how we're measuring it. I'd suggest a combination of brand search volume lift, share of voice metrics, and influenced pipeline — but leadership needs to sign off on that model before we start, not after.
+Sophia Grant: That's the right instinct, Owen. Put together a one-pager on the proposed measurement framework and I'll get it in front of the CMO this week. I'd rather have that conversation now than justify the spend retroactively.

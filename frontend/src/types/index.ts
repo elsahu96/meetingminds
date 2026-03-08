@@ -145,6 +145,14 @@ export interface GraphDataResponse {
   edges: GraphEdge[]
 }
 
+export interface GraphStats {
+  person:  number
+  team:    number
+  action:  number
+  topic:   number
+  blocker: number
+}
+
 export interface WebSocketGraphUpdate {
   type: 'graph_update'
   new_nodes: GraphNode[]

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 from app.graph.prompts import prompts
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
+from app.core.config import get_settings
+
 
 class BaseAgent:
 
@@ -10,19 +14,11 @@ class BaseAgent:
     prompt_name = "prompt_01"
 
     def __init__(self):
-        openai_model_configs = dict(
-            model=model_name,
-            temperature=0,
-            seed=1
-        )
+        settings = get_settings()
+        openai_model_configs = dict(model=self.model_name, temperature=0, seed=1, api_key=settings.openai_api_key)
         self.model = ChatOpenAI(**openai_model_configs)
 
-        self.prompt_template = ChatPromptTemplate.from_messages(
-            prompts["prompt_01"]["messages"]
-        )
-
-
-
-
-
-
+        raw_messages = prompts[self.prompt_name]["messages"]
+        # LangChain expects (role, content) tuples, not dicts
+        messages = [(m["role"], m["content"]) for m in raw_messages]
+        self.prompt_template = ChatPromptTemplate.from_messages(messages)

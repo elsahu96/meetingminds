@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react'
-import type { Transcript, GraphNode, GraphEdge } from '@/types'
-import { SEED_TRANSCRIPTS, SEED_NODES, SEED_EDGES } from '@/lib/seedData'
+import { useState, useCallback, useEffect } from 'react'
+import type { Transcript, GraphNode, GraphEdge, GraphStats } from '@/types'
+import { SEED_TRANSCRIPTS } from '@/lib/seedData'
 import { useProcessing } from '@/hooks/useProcessing'
+import { apiClient } from '@/lib/api'
 import Topbar        from '@/components/Topbar'
 import StatusBar     from '@/components/StatusBar'
 import GraphToolbar  from '@/components/GraphToolbar'
@@ -16,12 +17,34 @@ const nextFileId  = () => `t${fileIdCounter++}`
 
 export default function App() {
   const [tab,          setTab]          = useState<Tab>('ingest')
-  const [transcripts,  setTranscripts]  = useState<Transcript[]>(SEED_TRANSCRIPTS)
-  const [graphNodes,   setGraphNodes]   = useState<GraphNode[]>(SEED_NODES)
-  const [graphEdges,   setGraphEdges]   = useState<GraphEdge[]>(SEED_EDGES)
-  const [highlighted,  setHighlighted]  = useState<string | null>(null)
+  const [transcripts,  setTranscripts]  = useState<Transcript[]>([])
+  const [graphNodes,   setGraphNodes]   = useState<GraphNode[]>([])
+  const [graphEdges,   setGraphEdges]   = useState<GraphEdge[]>([])
+  const [highlighted,    setHighlighted]    = useState<string | null>(null)
+  const [focusedNodeIds, setFocusedNodeIds] = useState<string[] | null>(null)
+  const [stats,          setStats]          = useState<GraphStats>({ person: 0, team: 0, action: 0, topic: 0, blocker: 0 })
 
   const { processing, allDone, steps, showDelta, runProcessing } = useProcessing()
+
+  // Refresh stats whenever graph nodes are loaded/updated
+  useEffect(() => {
+    if (graphNodes.length === 0) return
+    apiClient.getStats().then(setStats).catch(() => {})
+  }, [graphNodes])
+
+
+  // Function to refresh graph data — also clears any query focus
+  const refreshGraph = useCallback(async () => {
+    try {
+      const graphData = await apiClient.getGraph()
+      setGraphNodes(graphData.nodes || [])
+      setGraphEdges(graphData.edges || [])
+      setFocusedNodeIds(null)
+      setHighlighted(null)
+    } catch (error) {
+      console.error('Failed to refresh graph data:', error)
+    }
+  }, [])
 
   // ── Transcript management ──────────────────────────────────────────────────
   const addTranscripts = useCallback((files: File[]) => {
@@ -53,8 +76,8 @@ export default function App() {
   // ── Processing ─────────────────────────────────────────────────────────────
   const handleProcess = useCallback(() => {
     runProcessing(transcripts, setTranscripts, (newNodes, newEdges) => {
-      setGraphNodes(prev => [...prev, ...newNodes])
-      setGraphEdges(prev => [...prev, ...newEdges])
+      setGraphNodes(newNodes)
+      setGraphEdges(newEdges)
     })
   }, [transcripts, runProcessing])
 
@@ -107,7 +130,11 @@ export default function App() {
           )}
 
           {tab === 'query' && (
-            <ChatPanel onHighlight={highlightAndQuery} />
+            <ChatPanel
+              onHighlight={highlightAndQuery}
+              onFocusNodes={setFocusedNodeIds}
+              nodes={graphNodes}
+            />
           )}
         </aside>
 
@@ -121,17 +148,18 @@ export default function App() {
 
         {/* ── Right panel: graph ── */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <GraphToolbar />
+          <GraphToolbar onRefresh={refreshGraph} />
           <ForceGraph
             nodes={graphNodes}
             edges={graphEdges}
             highlighted={highlighted}
+            focusedNodeIds={focusedNodeIds}
             onHighlight={handleHighlight}
           />
         </div>
       </div>
 
-      <StatusBar />
+      <StatusBar stats={stats} />
     </div>
   )
 }

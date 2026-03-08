@@ -1,6 +1,10 @@
 import { LEGEND_ITEMS } from '@/lib/graphConfig'
 
-export default function GraphToolbar() {
+interface GraphToolbarProps {
+  onRefresh?: () => void
+}
+
+export default function GraphToolbar({ onRefresh }: GraphToolbarProps) {
   return (
     <div
       className="flex items-center gap-3 flex-shrink-0 border-b border-border"
@@ -20,6 +24,15 @@ export default function GraphToolbar() {
       </span>
 
       <div className="flex items-center gap-3 ml-auto">
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-mono bg-surface-hover hover:bg-surface-active rounded border border-border transition-colors"
+            title="Refresh graph data"
+          >
+            ↻ Refresh
+          </button>
+        )}
         {LEGEND_ITEMS.map(l => (
           <div key={l.label} className="flex items-center gap-1">
             <span
