@@ -20,7 +20,7 @@ export default function Topbar({ transcriptCount }: Props) {
 
       <span className="badge-live font-mono">● LIVE</span>
       <span className="badge-db font-mono">SURREALDB</span>
-
+      <span className="badge-db font-mono">LANGCHAIN</span>
       <div style={{ width: 1, height: 20, background: 'var(--border)' }} />
 
       <span
@@ -41,8 +41,6 @@ export default function Topbar({ transcriptCount }: Props) {
             RISK: alice_chen · 4 open commitments
           </span>
         </div>
-
-        <button className="btn-top">LANGSMITH ↗</button>
         <button className="btn-top">EXPORT</button>
       </div>
     </header>

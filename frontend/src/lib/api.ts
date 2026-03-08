@@ -5,6 +5,7 @@ import type {
   QueryRequest,
   QueryResponse,
   GraphDataResponse,
+  GraphStats,
 } from "@/types";
 
 const api = axios.create({
@@ -29,6 +30,9 @@ export const apiClient = {
 
   /** Get graph data */
   getGraph: () => api.get<GraphDataResponse>("/graph").then((r) => r.data),
+
+  /** Get entity counts from SurrealDB */
+  getStats: () => api.get<GraphStats>("/stats").then((r) => r.data),
 
   /** Process notes through the LangGraph pipeline */
   processNotes: (req: {

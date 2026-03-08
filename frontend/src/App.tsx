@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import type { Transcript, GraphNode, GraphEdge } from '@/types'
+import type { Transcript, GraphNode, GraphEdge, GraphStats } from '@/types'
 import { SEED_TRANSCRIPTS } from '@/lib/seedData'
 import { useProcessing } from '@/hooks/useProcessing'
 import { apiClient } from '@/lib/api'
@@ -22,8 +22,15 @@ export default function App() {
   const [graphEdges,   setGraphEdges]   = useState<GraphEdge[]>([])
   const [highlighted,    setHighlighted]    = useState<string | null>(null)
   const [focusedNodeIds, setFocusedNodeIds] = useState<string[] | null>(null)
+  const [stats,          setStats]          = useState<GraphStats>({ person: 0, team: 0, action: 0, topic: 0, blocker: 0 })
 
   const { processing, allDone, steps, showDelta, runProcessing } = useProcessing()
+
+  // Refresh stats whenever graph nodes are loaded/updated
+  useEffect(() => {
+    if (graphNodes.length === 0) return
+    apiClient.getStats().then(setStats).catch(() => {})
+  }, [graphNodes])
 
 
   // Function to refresh graph data — also clears any query focus
@@ -152,7 +159,7 @@ export default function App() {
         </div>
       </div>
 
-      <StatusBar />
+      <StatusBar stats={stats} />
     </div>
   )
 }
